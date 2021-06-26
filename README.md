@@ -9,7 +9,7 @@ First you need to add the repo to your Ubuntu 20.04 VM server
 
 ```bash 
     sudo apt update ;
-    sudo apt install git
+    sudo apt install git &&
     git clone https://github.com/WCurtG/rasax-helm.git
 ```
 
