@@ -24,5 +24,6 @@ This will set up you server for easy install and reboot. After your server reboo
 After reconnecting run 
 
 ```bash 
+    cd rasax-helm ;
     ./rasax1.sh
 ```
