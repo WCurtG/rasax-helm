@@ -13,7 +13,7 @@ do
 
     case "$answer" in 
         y)
-        echo "Great let's proceed!";
+        echo "Great let's proceed! Running rasax1.sh";
         ./rasax1.sh
         x=1
         ;;
