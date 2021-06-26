@@ -17,7 +17,7 @@ This will set up you server for easy install and reboot. After your server reboo
 
 ```bash 
     cd rasax-helm
-    sudo chmod -x setup.sh ;
+    chmod -x setup.sh ;
     ./setup.sh
 ```
 
