@@ -1,11 +1,12 @@
 #!/bin/bash
 
-echo "Currently adding aliases to the .bashrc file" ;
+echo "Currently adding aliases to the .bashrc file.." ;
+sleep 2 ;
 echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
 echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
 echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
 echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
-source ~/.bashrc && echo "bashrc has been updated" || echo "bashrc update has failed" ;
+source ~/.bashrc && echo ".bashrc has been updated" || echo ".bashrc update has failed" ;
 
 cd $HOME &&
 mkdir octant &&
