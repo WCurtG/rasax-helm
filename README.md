@@ -16,7 +16,7 @@ First you need to add the repo to your Ubuntu 20.04 VM server and run the first 
     ./setup.sh
 ```
 
-After reconnecting run 
+After reconnecting run, this will install Octant, Kubectl and create a Rasa X dployment based on your values.yml file 
 
 ```bash 
     cd rasax-helm ;
