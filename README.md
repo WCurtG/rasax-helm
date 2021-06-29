@@ -25,5 +25,5 @@ After reconnecting run
 
 ```bash 
     cd rasax-helm ;
-    ./rasax2.sh
+    ./setup2.sh
 ```

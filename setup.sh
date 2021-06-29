@@ -2,9 +2,9 @@
 
 echo "Ready to begin...";
 chmod +x rasax1.sh rasax2.sh &&
-echo "Shell files ready, install env ready to start." ||
+echo "Shell files ready" ||
 echo "Shell files failed to become executable" &&
-sleep 1.5 ;
+sleep 1;
 x=0
 while [ $x = 0 ]
 do
@@ -13,8 +13,17 @@ do
 
     case "$answer" in 
         y)
-        echo "Great let's proceed! Running rasax1.sh";
-        ./rasax1.sh
+        echo "Great let's proceed!Starting apt update installing snapd, git, docker, microk8s cluster and Octant manager on your server.." && sleep 1
+        sudo apt update ;
+        wget https://gist.github.com/WCurtG/10273e1fca1c125a7e8bd103c9e9da62 ;
+        echo "We have added a values.yml file to you VM you need to update your info aftet this process has completed." && sleep 1
+        sudo apt install snapd ;
+        sudo apt install git ;
+        sudo apt install docker.io docker-compose ;
+        sudo snap install microk8s --classic ;
+        sudo usermod -a -G microk8s $USER ;
+        sudo chown -f -R $USER ~/.kube ;
+        echo "Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh..." ;
         x=1
         ;;
         n)
@@ -22,8 +31,7 @@ do
         x=1
         ;;
         *)
-        echo "Sorry that isn't an option choose y/n"
-        sleep 1
+        echo "Sorry that isn't an option choose y/n" && sleep 1
         ;;
     esac
 done
