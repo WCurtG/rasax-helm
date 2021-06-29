@@ -18,11 +18,10 @@ do
         x=1
         ;;
         n)
-        echo "Exiting.."
+        echo "Exiting Rasa X setup.." && sleep 1 && break
         x=1
         ;;
         *)
-        clear
         echo "Sorry that isn't an option choose y/n"
         sleep 1
         ;;
