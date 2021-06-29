@@ -2,9 +2,9 @@
 
 echo "Ready to begin...";
 chmod +x rasax1.sh rasax2.sh &&
-echo "Shell files ready" ||
+echo "Shell files ready, install env ready to start." ||
 echo "Shell files failed to become executable" &&
-sleep 1.5;
+sleep 1.5 ;
 x=0
 while [ $x = 0 ]
 do
