@@ -25,7 +25,8 @@ echo "kubectl namespace my-namespace has been created" ||
 echo "kubectl namespace my-namespace failed to be created" ;
 sudo snap install helm --classic || 
 echo "Helm install failed" ;
-helm repo add rasa-x https://rasahq.github.io/rasa-x-helm
+cd rasax-helm ; 
+helm repo add rasa-x https://rasahq.github.io/rasa-x-helm ; 
 helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x
 
 
