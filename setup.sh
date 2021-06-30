@@ -29,8 +29,10 @@ do
         sudo snap install microk8s --classic &&
         echo "------------------microk8s has been installed------------------" ||
         echo "------------------microk8s install failed------------------" ;
-        sudo usermod -a -G microk8s $USER &&
-        sudo chown -f -R $USER ~/.kube &&
+        sudo usermod -a -G microk8s $USER
+        sudo chown -f -R $USER ~/.kube
+        su - $USER
+        microk8s status --wait-ready
         echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
         echo "------------------Intial Setup failed------------------" 
         x=1
