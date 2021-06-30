@@ -29,10 +29,10 @@ do
         sudo snap install microk8s --classic &&
         echo "------------------microk8s has been installed------------------" ||
         echo "------------------microk8s install failed------------------" ;
-        sudo usermod -a -G microk8s $USER
-        sudo chown -f -R $USER ~/.kube
-        su - $USER
-        microk8s status --wait-ready &&
+        sudo usermod -a -G microk8s $USER && sleep 1;
+        sudo chown -f -R $USER ~/.kube && sleep 1;
+        su - $USER && sleep 1;
+        microk8s status --wait-ready && && sleep 1;
         cd rasax-helm-master;
         ./setup2.ssh
         echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
