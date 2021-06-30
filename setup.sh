@@ -20,12 +20,31 @@ do
         echo "------------------.env has been updated------------------" || 
         echo "------------------.env update has failed------------------" ;
         echo "------------------We have added a values.yml file to you VM you need to update your info after this process has completed.------------------" && sleep 1
-        sudo apt install snapd ;
-        sudo apt install docker.io docker-compose ;
-        sudo snap install microk8s --classic ;
-        sudo usermod -a -G microk8s $USER ;
-        sudo chown -f -R $USER ~/.kube ;
-        echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ;
+        sudo apt install snapd &&
+        echo "------------------------------------------------------"
+        echo "snapd has been installed"
+        echo "------------------------------------------------------" ||
+        echo "------------------------------------------------------"
+        echo "snapd install failed"
+        echo "------------------------------------------------------" &&
+        sudo apt install docker.io docker-compose &&
+        echo "------------------------------------------------------"
+        echo "docker has been installed"
+        echo "------------------------------------------------------" ||
+        echo "------------------------------------------------------"
+        echo "docker install failed"
+        echo "------------------------------------------------------" &&
+        sudo snap install microk8s --classic &&
+        echo "------------------------------------------------------"
+        echo "microk8s has been installed"
+        echo "------------------------------------------------------" ||
+        echo "------------------------------------------------------"
+        echo "microk8s install failed"
+        echo "------------------------------------------------------" &&  
+        sudo usermod -a -G microk8s $USER &&
+        sudo chown -f -R $USER ~/.kube &&
+        echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
+        echo "------------------Intial Setup failed------------------" 
         x=1
         ;;
         n)
