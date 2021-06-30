@@ -32,7 +32,7 @@ do
         sudo usermod -a -G microk8s $USER && sleep 1;
         sudo chown -f -R $USER ~/.kube && sleep 1;
         su - $USER && sleep 1;
-        microk8s status --wait-ready && && sleep 1;
+        microk8s status --wait-ready && sleep 1;
         cd rasax-helm-master;
         ./setup2.ssh
         echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
