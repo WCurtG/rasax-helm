@@ -3,9 +3,9 @@
 
 echo "------------------Enabling add ons & Configuring kubectl...------------------"
 sleep 2 ;
+microk8s enable dns storage helm3 registry dashboard ingress
 cd $HOME/.kube
 microk8s config > config
-microk8s enable dns storage helm3 registry dashboard ingress
 echo "------------------Currently adding aliases to the .bashrc file..------------------" ;
 sleep 2 ;
 echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
@@ -23,8 +23,7 @@ echo "------------------Octant has been installed Open browser at http://$(hostn
 echo "------------------Octant install has failed------------------" &&
 
 echo "------------------Installing Helm and Kubectl------------------" ;
-sudo snap install kubectl --classic && kubectl version --client || 
-echo "------------------Kubectl install failed------------------" ;
+sudo snap install kubectl --classic && kubectl version --client &&
 kubectl create namespace my-namespace && 
 echo "------------------kubectl namespace my-namespace has been created------------------" ||
 echo "------------------kubectl namespace my-namespace failed to be created------------------" ;
