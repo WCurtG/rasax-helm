@@ -21,26 +21,14 @@ do
         echo "------------------.env update has failed------------------" ;
         echo "------------------We have added a values.yml file to you VM you need to update your info after this process has completed.------------------" && sleep 1
         sudo apt install snapd &&
-        echo "------------------------------------------------------" &&
-        echo "snapd has been installed" &&
-        echo "------------------------------------------------------" ||
-        echo "------------------------------------------------------" &&
-        echo "snapd install failed" &&
-        echo "------------------------------------------------------" &&
+        echo "------------------snapd has been installed------------------" ||
+        echo "------------------snapd install failed------------------" ; 
         sudo apt install docker.io docker-compose &&
-        echo "------------------------------------------------------" &&
-        echo "docker has been installed" && 
-        echo "------------------------------------------------------" ||
-        echo "------------------------------------------------------" &&
-        echo "docker install failed" &&
-        echo "------------------------------------------------------" &&
+        echo "------------------docker has been installed------------------" ||
+        echo "------------------docker install failed------------------" ;
         sudo snap install microk8s --classic &&
-        echo "------------------------------------------------------" &&
-        echo "microk8s has been installed" &&
-        echo "------------------------------------------------------" ||
-        echo "------------------------------------------------------"&&
-        echo "microk8s install failed" &&
-        echo "------------------------------------------------------" &&  
+        echo "------------------microk8s has been installed------------------" ||
+        echo "------------------microk8s install failed------------------" ;
         sudo usermod -a -G microk8s $USER &&
         sudo chown -f -R $USER ~/.kube &&
         echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
