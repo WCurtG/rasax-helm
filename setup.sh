@@ -30,11 +30,11 @@ do
         echo "------------------microk8s has been installed------------------" ||
         echo "------------------microk8s install failed------------------" ;
         sudo usermod -a -G microk8s $USER && sleep 1;
-        sudo chown -f -R $USER ~/.kube && sleep 1;
-        su - $USER && sleep 1;
-        microk8s status --wait-ready && sleep 1;
-        cd rasax-helm-master;
-        ./setup2.ssh
+        echo "sudo chown -f -R USER ~/.kube && sleep 1"; sudo chown -f -R $USER ~/.kube && sleep 1;
+        echo "su - USER && sleep 1;" ; su - $USER && sleep 1;
+        echo "microk8s status --wait-ready && sleep 1" ; microk8s status --wait-ready && sleep 1;
+        echo "cd rasax-helm-master" ; cd rasax-helm-master;
+        echo "./setup2.ssh" ; ./setup2.ssh
         echo "------------------Intial Setup completed. Exit the VM by running the 'exit' command then reconnect and run rasax2.sh...------------------" ||
         echo "------------------Intial Setup failed------------------" 
         x=1
