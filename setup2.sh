@@ -34,6 +34,3 @@ echo "Helm install failed" ;
 cd rasax-helm ; 
 helm repo add rasa-x https://rasahq.github.io/rasa-x-helm ; 
 helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x
-
-cip=$(hostname -I | awk '{print $1}')
-echo $cip
