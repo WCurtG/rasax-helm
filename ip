@@ -9,7 +9,11 @@
 # mv -i values.yml $HOME
 
 
-read -e -p "
-List the content of your home dir ? [Y/n] " YN
+# read -e -p "
+# List the content of your home dir ? [Y/n] " YN
 
-[[ $YN == "y" || $YN == "Y" || $YN == "" ]] && ls -la ~/
+# [[ $YN == "y" || $YN == "Y" || $YN == "" ]] && ls -la ~/
+
+echo "This is a test."
+# Terminate our shell script with success message
+exit 0

@@ -1,46 +1,46 @@
 #!/bin/bash
-
+set -euxo pipefail
 # We need to get the external IP inorder to add it to your values.yml
 #EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
-EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
-echo "Your VM external ip $EXTERNAL_IP" ;
+export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
+echo Your VM external ip $EXTERNAL_IP ;
 
 # Intall the required dependencies 
-sudo apt-get install jq &&
+sudo apt-get install jqfsdfsdf &&
 echo "------------------jq has been installed------------------"||
-echo "------------------jq install failed------------------" ; 
+echo "------------------jq install failed------------------" && 
 sudo apt install snapd &&
 echo "------------------snapd has been installed------------------"||
-echo "------------------snapd install failed------------------" ; 
+echo "------------------snapd install failed------------------" && 
 sudo apt install docker.io docker-compose &&
 echo "------------------docker has been installed------------------"||
-echo "------------------docker install failed------------------" ;
+echo "------------------docker install failed------------------" ; 
 sudo snap install microk8s --classic &&
 echo "------------------microk8s has been installed------------------" ||
-echo "------------------microk8s install failed------------------" ;
+echo "------------------microk8s install failed------------------" ; 
 sudo snap install kubectl &&
 echo "------------------kubectl has been installed------------------" ||
-echo "------------------kubectl install failed------------------" ;
+echo "------------------kubectl install failed------------------" ; 
 sudo snap install helm --classic &&
 echo "------------------helm has been installed------------------" ||
-echo "------------------helm install failed------------------" ;
+echo "------------------helm install failed------------------" ; 
 echo "------------------Enabling add ons & Configuring kubectl...------------------"
-sleep 2 ;
-sudo usermod -a -G microk8s $USER ;
-sudo chown -f -R $USER ~/.kube ;
-su - $USER &&
-microk8s status --wait-ready &&
-microk8s enable dns storage helm3 registry dashboard ingress &&
-cd $HOME/.kube ;
-microk8s config > config ;
+sleep 2 &
+sudo usermod -a -G microk8s $USER && echo Kubectl step 1 success || echo Kubectl step 1 failure ; 
+sudo chown -f -R $USER ~/.kube && echo Kubectl step 2 success || echo Kubectl step 2 failure ; 
+su - $USER && echo Kubectl step 3 success || echo Kubectl step 3 failure ; 
+microk8s status --wait-ready && echo Kubectl step 4 success || echo Kubectl step 4 failure ; 
+microk8s enable dns storage helm3 registry dashboard ingress && echo Kubectl step 5 success || echo Kubectl step 5 failure ; 
+cd $HOME/.kube && echo Kubectl step 6 success || echo Kubectl step 6 failure ; 
+microk8s config > config && echo Kubectl step 7 success || echo Kubectl step 7 failure ; 
 echo "------------------Currently adding aliases to the .bashrc file..------------------" ;
-sleep 2 ;
+sleep 2 &&
 # We are adding need akiases to your .bashrc for ease of use and future commands
 echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
 echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
 echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
 echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
-source ~/.bashrc && echo "------------------.bashrc has been updated------------------" || echo "------------------.bashrc update has failed------------------" ;
+source ~/.bashrc && echo "------------------.bashrc has been updated------------------" || echo "------------------.bashrc update has failed------------------" ; Exit
 cd $HOME &&
 mkdir octant &&
 cd octant &&
@@ -65,7 +65,7 @@ helm repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
 helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
 echo "------------------helm --namespace my-namespace using values.yml has been installed" ||
 echo "------------------helm --namespace my-namespace install Failed------------------" ; 
-echo "Let's verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version"
+echo Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
 k get services && curl http://$EXTERNAL_IP/api/version &&
 read -e -p "Does this look correct? [Y/n] " YN
 [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
