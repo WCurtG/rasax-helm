@@ -1,6 +1,9 @@
 #!/bin/bash
 
-cd $HOME &&
-wget https://gist.githubusercontent.com/WCurtG/10273e1fca1c125a7e8bd103c9e9da62/raw/f5d12bcc4200aa2f9a95782b9a6ac30e4effc603/values.yml &&
-touch .env &&
-echo "EXTERNAL_IPS="$(hostname -I | awk '{print $1}')"" >> .env &&
+EXTERNAL_IP=$(hostname -I | awk '{print $1}')
+
+wget https://gist.githubusercontent.com/WCurtG/10273e1fca1c125a7e8bd103c9e9da62/raw/df604572a04301285217f7aaf1201a002634b745/temp_values.yml &&
+echo $EXTERNAL_IPS
+sed "s/EXTERNAL_IP/$(EXTERNAL_IP)/" .temp_values.yml > tmp.yml && 
+mv tmp.yml values.yml &&
+mv -i values.yml $HOME
