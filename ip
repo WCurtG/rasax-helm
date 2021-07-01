@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+#EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
+# EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
+# echo This is your VM external ip $EXTERNAL_IP it will be added to your values.yml file &&
+# sed "s/EXTERNAL_IP/$EXTERNAL_IP/" temp_values.yml > tmp.yml && 
+# mv tmp.yml values.yml &&
+# mv -i values.yml $HOME
+
+
+read -e -p "
+List the content of your home dir ? [Y/n] " YN
+
+[[ $YN == "y" || $YN == "Y" || $YN == "" ]] && ls -la ~/
