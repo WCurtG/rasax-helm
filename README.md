@@ -19,5 +19,5 @@ After reconnecting run, this will install Octant, Kubectl and create a Rasa X dp
 
 ```bash 
     cd rasax-helm-master &&
-    ./setup2.sh
+    ./step2.sh
 ```
