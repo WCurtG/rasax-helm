@@ -6,7 +6,7 @@ export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
 echo Your VM external ip $EXTERNAL_IP ;
 
 # Intall the required dependencies 
-sudo apt-get install jqfsdfsdf &&
+sudo apt-get install jq &&
 echo "------------------jq has been installed------------------"||
 echo "------------------jq install failed------------------" && 
 sudo apt install snapd &&
