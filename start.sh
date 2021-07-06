@@ -1,14 +1,12 @@
 #!/bin/bash
 set -euxo pipefail
-# We need to get the external IP inorder to add it to your values.yml
-#EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
-export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
-echo Your VM external ip $EXTERNAL_IP ;
 
 # Intall the required dependencies 
 sudo apt-get install jq &&
 echo "------------------jq has been installed------------------"||
 echo "------------------jq install failed------------------" &&
+# We need to get the external IP inorder to add it to your values.yml
+#EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
 export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
 echo Your VM external ip $EXTERNAL_IP &&
 echo "------------------EXTERNAL_IP has been added to env variables------------------"||
