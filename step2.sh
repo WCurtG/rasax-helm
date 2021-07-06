@@ -36,10 +36,6 @@ mkdir octant &&
 cd octant &&
 wget https://github.com/vmware-tanzu/octant/releases/download/v0.15.0/octant_0.15.0_Linux-64bit.deb &&
 sudo dpkg -i octant_0.15.0_Linux-64bit.deb &&
-echo "------------------Octant has been installed Open browser at http://$EXTERNAL_IP:8002------------------" || 
-echo "------------------Octant install has failed------------------" ;
-echo "------------------all required dependencies have been installed------------------"
-sleep 4 &&
 # We need to get the external IP inorder to add it to your values.yml
 #EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
 export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
@@ -47,6 +43,10 @@ echo Your VM external ip $EXTERNAL_IP &&
 echo "------------------EXTERNAL_IP has been added to env variables------------------"||
 echo "------------------EXTERNAL_IP has failed to be added to env variables------------------" && 
 echo "Your VM external ip $EXTERNAL_IP it will be added to your values.yml file" &&
+echo "------------------Octant has been installed Open browser at http://$EXTERNAL_IP:8002------------------" || 
+echo "------------------Octant install has failed------------------" ;
+echo "------------------all required dependencies have been installed------------------"
+sleep 4 &&
 # Replace the EXTERNAL_IP variable on temp_values.yml in the repo rename and move it to the root directory for deployment
 sed "s/EXTERNAL_IP/$EXTERNAL_IP/" temp_values.yml > tmp.yml && 
 mv tmp.yml values.yml &&
