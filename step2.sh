@@ -37,6 +37,7 @@ printf "\n# -------------------------------\n#       Octant install has failed \
 sleep 4 &&
 # We are now creating a kubectl namespace called my-namespace with command kubectl create namespace my-namespace
 # kubectl create namespace my-namespace &&
+cd $HOME &&
 kubectl create namespace my-namespace &&
 printf "\n# -------------------------------\n#       kubectl namespace my-namespace has been created \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       kubectl namespace my-namespace failed to be created \n# -------------------------------\n" &&
