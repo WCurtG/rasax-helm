@@ -1,28 +1,30 @@
 #!/bin/bash
 set -euxo pipefail
 
+
+# We are adding need akiases to your .bashrc for ease of use and future commands
+echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
+echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
+echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
+echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
+printf "\n# -------------------------------\n#       .bashrc has been updated \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n" &&
+
 # Intall the required dependencies 
 sudo apt-get install jq &&
-echo "------------------jq has been installed------------------"||
-echo "------------------jq install failed------------------" &&
+printf "\n# -------------------------------\n#       jq has been installed \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       jq install failed \n# -------------------------------\n" &&
 sudo apt install snapd &&
-echo "------------------snapd has been installed------------------"||
-echo "------------------snapd install failed------------------" && 
+printf "\n# -------------------------------\n#       snapd has been installed \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       snapd install failed \n# -------------------------------\n" &&
 sudo apt install docker.io docker-compose &&
-echo "------------------docker has been installed------------------"||
-echo "------------------docker install failed------------------" ; 
+printf "\n# -------------------------------\n#       docker has been installed \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       docker install failed \n# -------------------------------\n" &&
 sudo snap install microk8s --classic &&
-echo "------------------microk8s has been installed------------------" ||
-echo "------------------microk8s install failed------------------" ; 
+printf "\n# -------------------------------\n#       microk8s has been installed \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       microk8s install failed \n# -------------------------------\n" &&
 sudo usermod -a -G microk8s $USER 
-sudo chown -f -R $USER ~/.kube 
-# sudo usermod -a -G microk8s $USER && 
-# echo "------------------Kubectl step 1 success------------------" || 
-# echo "------------------Kubectl step 1 failure------------------" &&
-# sudo chown -f -R $USER ~/.kube && 
-# echo "------------------Kubectl step 2 success------------------" || 
-# echo "------------------Kubectl step 2 failure------------------" &&
-# This might cause an issue
+sudo chown -f -R $USER ~/.kube &&
 sudo su - $USER 
 
 

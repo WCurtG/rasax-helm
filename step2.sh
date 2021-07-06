@@ -29,6 +29,8 @@ echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
 echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
 echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
 # . ~/.bashrc && 
+printf "\n# -------------------------------\n#       .bashrc has been updated \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n" &&
 echo "------------------.bashrc has been updated------------------" || 
 echo "------------------.bashrc update has failed------------------" &&
 cd $HOME &&
