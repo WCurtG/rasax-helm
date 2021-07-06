@@ -31,8 +31,6 @@ echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
 # . ~/.bashrc && 
 printf "\n# -------------------------------\n#       .bashrc has been updated \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n" &&
-echo "------------------.bashrc has been updated------------------" || 
-echo "------------------.bashrc update has failed------------------" &&
 cd $HOME &&
 mkdir octant &&
 cd octant &&
@@ -42,35 +40,34 @@ sudo dpkg -i octant_0.15.0_Linux-64bit.deb &&
 #EXTERNAL_IP="$(hostname -I | awk '{print $1}')"
 export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
 echo Your VM external ip $EXTERNAL_IP &&
-echo "------------------EXTERNAL_IP has been added to env variables------------------"||
-echo "------------------EXTERNAL_IP has failed to be added to env variables------------------" && 
-echo "Your VM external ip $EXTERNAL_IP it will be added to your values.yml file" &&
-echo "------------------Octant has been installed Open browser at http://$EXTERNAL_IP:8002------------------" || 
-echo "------------------Octant install has failed------------------" ;
-echo "------------------all required dependencies have been installed------------------"
+printf "\n# -------------------------------\n#       EXTERNAL_IP has been added to env variables \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       EXTERNAL_IP has failed to be added to env variables \n# -------------------------------\n" &&
+printf "\n# Your VM external ip $EXTERNAL_IP it will be added to your values.yml file \n#" &&
+printf "\n# -------------------------------\n#       Octant has been installed Open browser at http://$EXTERNAL_IP:8002 \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       Octant install has failed \n# -------------------------------\n" &&
 sleep 4 &&
 # Replace the EXTERNAL_IP variable on temp_values.yml in the repo rename and move it to the root directory for deployment
 sed "s/EXTERNAL_IP/$EXTERNAL_IP/" temp_values.yml > tmp.yml && 
 mv tmp.yml values.yml &&
 mv -i values.yml $HOME && 
-echo "We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory" &&
+printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" &&
 # We are now creating a kubectl namespace called my-namespace with command kubectl create namespace my-namespace
 # kubectl create namespace my-namespace &&
-microk8s.kubectl create namespace my-namespace &&
-echo "------------------kubectl namespace my-namespace has been created------------------" ||
-echo "------------------kubectl namespace my-namespace failed to be created------------------" &&
+kubectl create namespace my-namespace &&
+printf "\n# -------------------------------\n#       kubectl namespace my-namespace has been created \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       kubectl namespace my-namespace failed to be created \n# -------------------------------\n" &&
 # We now need to get the Rasa X helm repo https://github.com/RasaHQ/rasa-x-helm 
 # helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
 # helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
-microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
-microk8s.helm3 --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
-echo "------------------helm --namespace my-namespace using values.yml has been installed" ||
-echo "------------------helm --namespace my-namespace install Failed------------------" && 
-echo "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
+helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
+helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
+printf "\n# -------------------------------\n#       helm --namespace my-namespace using values.yml has been installed \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       helm --namespace my-namespace install Failed \n# -------------------------------\n" &&
+printf "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
 k get services && curl http://$EXTERNAL_IP/api/version" &&
 read -e -p "Does this look correct? [Y/n] " YN
 [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-echo "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
+printf "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
 # Starting Octant Listener at port :8002
 read -e -p "Would you like to start octant? [Y/n] " YN
 [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
