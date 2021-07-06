@@ -50,6 +50,7 @@ printf "\n# -------------------------------\n#       helm --namespace my-namespa
 printf "\n# -------------------------------\n#       helm --namespace my-namespace install Failed \n# -------------------------------\n" &&
 printf "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
 k get services && curl http://$EXTERNAL_IP/api/version" &&
+printf "\n# -------------------------------\n#       You can also open in your browser here http://$EXTERNAL_IP:8000/api/version \n# -------------------------------\n" &&
 read -e -p "Does this look correct? [Y/n] " YN
 [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
 printf "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
