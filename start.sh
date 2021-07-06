@@ -8,7 +8,11 @@ echo Your VM external ip $EXTERNAL_IP ;
 # Intall the required dependencies 
 sudo apt-get install jq &&
 echo "------------------jq has been installed------------------"||
-echo "------------------jq install failed------------------" && 
+echo "------------------jq install failed------------------" &&
+export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
+echo Your VM external ip $EXTERNAL_IP &&
+echo "------------------EXTERNAL_IP has been added to env variables------------------"||
+echo "------------------EXTERNAL_IP has failed to be added to env variables------------------" && 
 sudo apt install snapd &&
 echo "------------------snapd has been installed------------------"||
 echo "------------------snapd install failed------------------" && 
