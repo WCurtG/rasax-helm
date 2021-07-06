@@ -23,14 +23,6 @@ echo "------------------helm has been installed------------------" ||
 echo "------------------helm install failed------------------" ; 
 echo "------------------Enabling add ons & Configuring kubectl...------------------"
 sleep 2 &&
-# We are adding need akiases to your .bashrc for ease of use and future commands
-echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
-echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
-echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
-echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
-# . ~/.bashrc && 
-printf "\n# -------------------------------\n#       .bashrc has been updated \n# -------------------------------\n" ||
-printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n" &&
 cd $HOME &&
 mkdir octant &&
 cd octant &&
@@ -47,6 +39,7 @@ printf "\n# -------------------------------\n#       Octant has been installed O
 printf "\n# -------------------------------\n#       Octant install has failed \n# -------------------------------\n" &&
 sleep 4 &&
 # Replace the EXTERNAL_IP variable on temp_values.yml in the repo rename and move it to the root directory for deployment
+cd rasax-helm-master &&
 sed "s/EXTERNAL_IP/$EXTERNAL_IP/" temp_values.yml > tmp.yml && 
 mv tmp.yml values.yml &&
 mv -i values.yml $HOME && 
