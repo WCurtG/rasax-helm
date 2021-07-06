@@ -18,7 +18,7 @@ echo "------------------docker install failed------------------" ;
 sudo snap install microk8s --classic &&
 echo "------------------microk8s has been installed------------------" ||
 echo "------------------microk8s install failed------------------" ; 
-sudo snap install kubectl &&
+sudo snap install kubectl --classic &&
 echo "------------------kubectl has been installed------------------" ||
 echo "------------------kubectl install failed------------------" ; 
 sudo snap install helm --classic &&
