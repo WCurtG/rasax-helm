@@ -12,9 +12,10 @@ printf "\n# -------------------------------\n#       .bashrc update has failed \
 
 
 # Intall the required dependencies 
-sudo apt-get install jq &&
-printf "\n# -------------------------------\n#       jq has been installed \n# -------------------------------\n" ||
-printf "\n# -------------------------------\n#       jq install failed \n# -------------------------------\n" &&
+# We were using jq to parse the json from https://ipinfo.io/json to get the EXTERNAL_IP now using http://whatismyip.akamai.com/ and its not needed 
+# sudo apt-get install jq &&
+# printf "\n# -------------------------------\n#       jq has been installed \n# -------------------------------\n" ||
+# printf "\n# -------------------------------\n#       jq install failed \n# -------------------------------\n" &&
 sudo apt install snapd &&
 printf "\n# -------------------------------\n#       snapd has been installed \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       snapd install failed \n# -------------------------------\n" &&
@@ -25,7 +26,8 @@ sudo snap install microk8s --classic &&
 printf "\n# -------------------------------\n#       microk8s has been installed \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       microk8s install failed \n# -------------------------------\n" &&
 # Replace the EXTERNAL_IP variable on temp_values.yml in the repo rename and move it to the root directory for deployment
-export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
+# export EXTERNAL_IP="$(curl -s "https://ipinfo.io/json" | jq -r '.ip')" &&
+export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
 echo Your VM external ip $EXTERNAL_IP &&
 printf "\n# -------------------------------\n#       EXTERNAL_IP has been added to env variables \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       EXTERNAL_IP has failed to be added to env variables \n# -------------------------------\n" &&
