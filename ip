@@ -1,10 +1,30 @@
 #!/bin/bash
 
-export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
-echo Your VM external ip $EXTERNAL_IP &&
-printf "\n# -------------------------------\n#       EXTERNAL_IP has been added to env variables \n# -------------------------------\n" ||
-printf "\n# -------------------------------\n#       EXTERNAL_IP has failed to be added to env variables \n# -------------------------------\n" &&
-printf "\n# Your VM external ip $EXTERNAL_IP it will be added to your values.yml file \n#" &&
+set -e
+
+boolean() {
+  case $1 in
+    true) echo true ;;
+    false) echo false ;;
+    *) echo "Err: Unknown boolean value \"$1\"" 1>&2; exit 1 ;;
+   esac
+}
+
+DOWNLOADER=
+
+# Helper functions
+echo_success() {
+  echo -e "\e[32m${1}\e[0m"
+}
+
+echo_bold() {
+  echo -e "\e[1m${1}\e[0m"
+}
+
+fatal() {
+  echo "$@" >&2
+  exit 1
+}
 
 run_loading_animation() {
   i=1
@@ -20,24 +40,63 @@ run_loading_animation() {
   done
 }
 
+does_command_exist() {
+  command -v "$1" > /dev/null
+}
+
+verify_downloader() {
+    # Return failure if it doesn't exist or is no executable
+    does_command_exist "$1" || return 1
+
+    # Set verified executable as our downloader program and return success
+    DOWNLOADER=$1
+    return 0
+}
+
+check_if_can_be_installed() {
+  OS=$(uname | tr '[:upper:]' '[:lower:]')
+  if [[ $OS != "linux" ]]
+  then
+    fatal "Running this script is only supported on Linux systems."
+  fi
+
+  verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
+}
+
+# check_if_can_be_installed && echo $DOWNLOADER
+
+is_kubectl_installed_and_configured() {
+  # detect if kubectl command is available
+  does_command_exist "kubectl" || return 1
+
+  # detect if server is configured
+  kubectl version --short | grep -q 'Server Version: .*' || return 1
+}
+
+# is_kubectl_installed_and_configured && echo kubectl is configured || echo kubectl is not configured
+
+export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
+
 rasax_pw () {
-    echo your new password will be $YN && 
-    export RASAX_PW=$YN &&
-    printf "\n# -------------------------------\n#       New Password $TEST_PW saved \n# -------------------------------\n"
-    sed "s/EXTERNAL_IP/$EXTERNAL_IP/;s/RASAX_PW/$RASAX_PW" temp_values.yml > tmp.yml && 
+    export RASAX_PW=$1
+    echo your new password will be $1 && 
+    printf "\n# -------------------------------\n#       New Password $1 saved \n# -------------------------------\n"
+    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
     mv tmp.yml values.yml &&
     mv -i values.yml $HOME && 
-    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" 
+    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
 }
 
 ip_only () {
-    sed "s/EXTERNAL_IP/$EXTERNAL_IP/;" temp_values.yml > tmp.yml && 
+    sed "s/EXTERNAL_IP/$1/;" temp_values.yml > tmp.yml && 
     mv tmp.yml values.yml &&
     mv -i values.yml $HOME && 
-    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" 
+    printf "\n# Your VM external ip $1 it will be added to your values.yml file \n#" 
 }
 
-read -e -p "Do you want to set an new password? " YN
- [$YN == ""] && echo your password will remain the same & ip_only || rasax_pw
+
+read -e -p "Do you want to set an new password? leave blank to keep current pw  " YN
+[[ $YN != "" ]] && echo great this is your new password $YN & rasax_pw $YN $EXTERNAL_IP || ip_only $EXTERNAL_IP
+
 
 
