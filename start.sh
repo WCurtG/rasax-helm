@@ -12,16 +12,6 @@ printf "\n# -------------------------------\n#       .bashrc update has failed \
 
 
 # Intall the required dependencies 
-sudo apt update && 
-sudo apt upgrade &&
-wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
-printf "\n# -------------------------------\n#       rasax-helm-master has been added  \n# -------------------------------\n" ||
-printf "\n# -------------------------------\n#       rasax-helm-master failed \n# -------------------------------\n" &&
-sudo apt install unzip &&
-printf "\n# -------------------------------\n#       unzip has been installed \n# -------------------------------\n" ||
-printf "\n# -------------------------------\n#       unzip install failed \n# -------------------------------\n" &&
-unzip master.zip &&
-cd rasax-helm-master &&
 sudo apt-get install jq &&
 printf "\n# -------------------------------\n#       jq has been installed \n# -------------------------------\n" ||
 printf "\n# -------------------------------\n#       jq install failed \n# -------------------------------\n" &&
