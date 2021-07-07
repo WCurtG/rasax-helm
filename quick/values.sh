@@ -11,4 +11,4 @@ printf "\n# Your VM external ip $EXTERNAL_IP it will be added to your values.yml
 sed "s/EXTERNAL_IP/$EXTERNAL_IP/" temp_values.yml > tmp.yml && 
 mv tmp.yml values.yml &&
 mv -i values.yml $HOME && 
-printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" &&
+printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" 
