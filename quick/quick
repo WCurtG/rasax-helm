@@ -342,7 +342,7 @@ add_kubeconfig_variable() {
 }
 
 echo_rasa_is_deployed() {
-  echo_success "\n\nWelcome to Rasa X ðŸŽ‰\n"
+  echo_success "\n\nWelcome to Rasa X 🌟\n"
 
   if $IS_EMBEDDED_CLUSTER
   then
