@@ -446,7 +446,7 @@ wait_till_deployment_finished() {
 
 provide_login_credentials() {
   # Explain how to access Rasa X
-  echo -e "The deployment is ready ðŸŽ‰. "
+  echo -e "The deployment is ready 🌟. "
 
   if $IS_EMBEDDED_CLUSTER
   then
@@ -581,7 +581,7 @@ if is_rasa_x_deployed
 then
   upgrade_rasa_x
   wait_till_deployment_finished
-  echo -e "Upgrading was successful ðŸŽ‰. "
+  echo -e "Upgrading was successful 🌟. "
 else
   generate_not_yet_specified_passwords
   install_rasa_x_chart
