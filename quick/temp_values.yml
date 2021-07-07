@@ -528,7 +528,7 @@ nginx:
     # nodePort can be used with a service of type `NodePort` to expose the service on a certain port of the node (https://kubernetes.io/docs/concepts/services-networking/service/#nodeport)
     nodePort: ""
     # externalIPs can be used to expose the service to certain IPs (https://kubernetes.io/docs/concepts/services-networking/service/#external-ips)
-    externalIPs: []
+    externalIPs: [EXTERNAL_IP]
   livenessProbe:
     # command for the `livenessProbe`
     command: []
