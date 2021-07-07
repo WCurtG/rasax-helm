@@ -34,7 +34,7 @@ rasax:
     # username specifies a name of this user
     username: "me"
     # password for this user (leave it empty to skip the user creation)
-    password: ""
+    password: "RASAX_PW"
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##

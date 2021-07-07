@@ -1,5 +1,43 @@
 #!/bin/bash
 
+export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
+echo Your VM external ip $EXTERNAL_IP &&
+printf "\n# -------------------------------\n#       EXTERNAL_IP has been added to env variables \n# -------------------------------\n" ||
+printf "\n# -------------------------------\n#       EXTERNAL_IP has failed to be added to env variables \n# -------------------------------\n" &&
+printf "\n# Your VM external ip $EXTERNAL_IP it will be added to your values.yml file \n#" &&
 
+run_loading_animation() {
+  i=1
+  sp="/-\|"
+  while :
+  do
+    sleep 0.1
+    # Don't show spinner when we are debugging
+    if ! $INSTALLER_DEBUG_MODE
+    then
+      printf "\b%s" ${sp:i++%${#sp}:1}
+    fi
+  done
+}
+
+rasax_pw () {
+    echo your new password will be $YN && 
+    export RASAX_PW=$YN &&
+    printf "\n# -------------------------------\n#       New Password $TEST_PW saved \n# -------------------------------\n"
+    sed "s/EXTERNAL_IP/$EXTERNAL_IP/;s/RASAX_PW/$RASAX_PW" temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -i values.yml $HOME && 
+    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" 
+}
+
+ip_only () {
+    sed "s/EXTERNAL_IP/$EXTERNAL_IP/;" temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -i values.yml $HOME && 
+    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP has been added to your root directory \n" 
+}
+
+read -e -p "Do you want to set an new password? " YN
+ [$YN == ""] && echo your password will remain the same & ip_only || rasax_pw
 
 
