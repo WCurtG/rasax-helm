@@ -8,7 +8,7 @@ The easy way to set up Rasa X on your VM server with shell.
 To just clone the repo and unzip to your VM
 
 ```bash 
-curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/quick/rasax-quick.sh | sudo bash
+curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/quick/quick | sudo bash
 ```
 
 First you need to add the repo to your Ubuntu 20.04 VM server and run start.sh
