@@ -246,6 +246,7 @@ provide_login_credentials() {
 }
 
 update_values () {
+    cd $HOME/rasax-helm-master &&
     seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" && 
     
     sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
