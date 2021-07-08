@@ -16,6 +16,17 @@ export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
 
+# Environment variables
+DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
+ENABLE_DUCKLING=${ENABLE_DUCKLING}
+INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
+
+# Passwords
+INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+
 if $INSTALLER_DEBUG_MODE
 then
   set +x
@@ -86,32 +97,17 @@ add_alias () {
     echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
     echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
     echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
-    printf "\n# -------------------------------\n#       .bashrc has been updated \n#   -------------------------------\n" ||
-    printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n"
+    seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
 }
 
-
-is_kubectl_installed_and_configured() {
-  # detect if kubectl command is available
-  does_command_exist "kubectl" || return 1
-
-  # detect if server is configured
-  kubectl version --short | grep -q 'Server Version: .*' || return 1
+is_snapd_installed_and_configured() {
+  # detect if snapd command is available
+  does_command_exist "snapd" || return 1
 }
 
-install_helm() {
-  echo "Installing Helm command line interface  ..."
-
-  # Install Helm
-  download https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash > ${REDIRECT} 
-
-  # Check if the `helm` command is available
-  if ! does_command_exist "helm"
-  then
-    fatal "Something went wrong when trying to install the Helm command line interface.\
- This is required for Rasa X deployment. Please create a question for this in the Rasa\
- Forum (forum.rasa.com) so that we can help you."
-  fi
+install_snapd () {
+    sudo apt install snapd -y > ${REDIRECT} &&
+    seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" 
 }
 
 is_docker_installed_and_configured () {
@@ -120,16 +116,15 @@ is_docker_installed_and_configured () {
 }
 
 install_docker () {
-    echo "Installing docker ..."
+    echo_bold "Installing docker ..."
 
-    curl -fsSL https://get.docker.com -o get-docker.sh > ${REDIRECT}
-    sh get-docker.sh
-
+    sudo apt install docker.io docker-compose -y &&
+    seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed" 
 }
 
-install_snapd () {
-    sudo apt install snapd -y > ${REDIRECT} &&
-    seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" 
+is_microk8s_installed_and_configured() {
+  # detect if microk8s command is available
+  does_command_exist "microk8s" || return 1
 }
 
 install_microk8s () {
@@ -176,28 +171,36 @@ get_specified_password_or_generate() {
   fi
 }
 
-# provide_login_credentials() {
-#   # Explain how to access Rasa X
-#   echo -e "The deployment is ready ðŸŽ‰. "
+provide_login_credentials() {
+  # Explain how to access Rasa X
+  echo -e "The deployment is ready 🤖. "
 
-#   if $IS_EMBEDDED_CLUSTER
-#   then
-#     # Determine the public IP address
-#     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
-#     LOGIN_URL="http://${PUBLIC_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+  if $IS_EMBEDDED_CLUSTER
+  then
+    # Determine the public IP address
+    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+    LOGIN_URL="http://$2/login?username=me&password=$1"
 
-#     # Check if the URL is available over the public IP address
-#     STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
-#     if test "$STATUSCODE" -ne 200; then
-#       # Determine the local IP address associated with a default gateway
-#       LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
-#       # Return the URL with the local IP address if the login webside is not available over the public address
-#       LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
-#     fi
+    # Check if the URL is available over the public IP address
+    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
+    if test "$STATUSCODE" -ne 200; then
+      # Determine the local IP address associated with a default gateway
+      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
+      # Return the URL with the local IP address if the login webside is not available over the public address
+      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+    fi
 
-#     echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
-#   fi
-# }
+    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+  fi
+}
+
+is_kubectl_installed_and_configured() {
+  # detect if kubectl command is available
+  does_command_exist "kubectl" || return 1
+
+  # detect if server is configured
+  kubectl version --short | grep -q 'Server Version: .*' || return 1
+}
 
 install_kubectl () {
     sudo snap install kubectl --classic &&
@@ -213,32 +216,55 @@ install_kubectl () {
 
 }
 
+is_helm_installed_and_configured() {
+  # detect if helm command is available
+  does_command_exist "helm" || return 1
+}
+
+install_helm() {
+  echo "Installing Helm command line interface  ..."
+
+  # Install Helm
+  sudo snap install helm --classic > ${REDIRECT} 
+
+  # Check if the `helm` command is available
+  if ! does_command_exist "helm"
+  then
+    fatal "Something went wrong when trying to install the Helm command line interface.\
+ This is required for Rasa X deployment. Please create a question for this in the Rasa\
+ Forum (forum.rasa.com) so that we can help you."
+  fi
+}
+
+is_octant_installed_and_configured() {
+  # detect if octant command is available
+  does_command_exist "octant" || return 1
+}
+
 install_octant () {
     cd $HOME &&
     mkdir octant &&
     cd octant &&
-    wget https://github.com/vmware-tanzu/octant/releases/download/v0.15.0/octant_0.15.0_Linux-64bit.deb &&
-    sudo dpkg -i octant_0.15.0_Linux-64bit.deb
+    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
+    sudo dpkg -i octant_0.21.0_Linux-64bit.deb
 }
 
 create_kubectl_namespace () {
     cd $HOME &&
     kubectl create namespace my-namespace &&
-    printf "\n# -------------------------------\n#       kubectl namespace my-namespace has been created \n# -------------------------------\n" ||
-    printf "\n# -------------------------------\n#       kubectl namespace my-namespace failed to be created \n# -------------------------------\n"
+    seperator echo_success "kubectl namespace my-namespace has been created" || seperator echo_bold "kubectl namespace my-namespace failed to be created"
 }
 
 deploy_helm () {
     helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
     helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
-    printf "\n# -------------------------------\n#       helm --namespace my-namespace using values.yml has been installed \n#  -------------------------------\n" ||
-    printf "\n# -------------------------------\n#       helm --namespace my-namespace install Failed \n# -------------------------------\n" &&
-    printf "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.  3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
+    seperator echo_success "helm --namespace my-namespace using values.yml has been installed" || seperator echo_bold "helm --namespace my-namespace install Failed"&&
+    seperator echo_success "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.  3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
     k get services && curl http://$EXTERNAL_IP/api/version" &&
-    printf "\n# -------------------------------\n#       You can also open in your browser here http://$EXTERNAL_IP:8000/api/version \n#    -------------------------------\n" &&
+    seperator echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
     read -e -p "Does this look correct? [Y/n] " YN
     [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-    printf "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
+    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
 }
 
 start_octant () {
@@ -247,23 +273,23 @@ start_octant () {
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
 
+# This is the start of running code
 check_if_can_be_installed &&
 add_alias &&
-install_snapd &&
-install_docker &&
-install_microk8s &&
+is_snapd_installed_and_configured || install_snapd &&
+is_docker_installed_and_configured || install_docker &&
+is_microk8s_installed_and_configured || install_microk8s &&
 
+# This is how we set the intial user password and external IP
 read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW == "" ]] && rasax_pw $(get_specified_password_or_generate  ) $EXTERNAL_IP || rasax_pw $(get_specified_password_or_generate $PW) $EXTERNAL_IP
 
-install_kubectl &&
-install_helm &&
-install_octant &&
-
-read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-[[ $PW == "" ]] && rasax_pw $(get_specified_password_or_generate  ) $EXTERNAL_IP || rasax_pw $(get_specified_password_or_generate $PW) $EXTERNAL_IP
-
-
+is_kubectl_installed_and_configured || install_kubectl &&
+is_helm_installed_and_configured || install_helm &&
+is_octant_installed_and_configured || install_octant &&
 create_kubectl_namespace &&
 deploy_helm &&
+provide_login_credentials $PW $EXTERNAL_IP &&
+read -e -p "Do you want to start Octant? [Y/n] " YN
+[[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
 start_octant

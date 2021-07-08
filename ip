@@ -11,7 +11,12 @@ boolean() {
 }
 
 INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
-
+# Passwords
+INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
 
@@ -47,19 +52,65 @@ does_command_exist() {
   command -v "$1" > /dev/null
 }
 
-install_docker () {
-    echo "Installing docker ..."
-    sudo apt install docker.io docker-compose &&
-    # curl -fsSL https://get.docker.com -o get-docker.sh > ${REDIRECT}
-    # sh get-docker.sh
-    # Check if the `docker` command is available
-    if ! does_command_exist "docker"
-    then
-      fatal "Something went wrong when trying to install the docker command line interface.\
-      This is required for Rasa X deployment."
+update_values () {
+    seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" && 
+    
+    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    
+    mv tmp.yml values.yml &&
+    mv -f values.yml $HOME &&
+    
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n POSTGRES_PASSWORD : ${POSTGRES_PASSWORD}\n \n RABBITMQ_PASSWORD : ${RABBITMQ_PASSWORD}\n \n REDIS_PASSWORD : ${REDIS_PASSWORD}\n" 
+}
+
+generate_not_yet_specified_passwords() {
+  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
+  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
+  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
+  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
+}
+
+# Generates a random password when feed nothing. 
+get_specified_password_or_generate() {
+  if [[ -z $1 ]]
+  then
+    # shellcheck disable=SC2005
+    echo "$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
+  else
+    echo "$1"
+  fi
+}
+
+is_docker_installed_and_configured () {
+    # detect if docker command is available
+    does_command_exist docker || return 1 
+}
+
+provide_login_credentials() {
+  # Explain how to access Rasa X
+  echo -e "The deployment is ready 🤖. "
+
+    # Determine the public IP address
+    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+    LOGIN_URL="http://${EXTERNAL_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+
+    # Check if the URL is available over the public IP address
+    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
+    if test "$STATUSCODE" -ne 200; then
+      # Determine the local IP address associated with a default gateway
+      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
+      # Return the URL with the local IP address if the login webside is not available over the public address
+      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
     fi
-}   
 
-install_docker && 
-seperator echo_success "docker has been installed"
+    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+}
 
+generate_not_yet_specified_passwords &&
+update_values &&
+# echo ${INITIAL_USER_PASSWORD}
+# echo ${POSTGRES_PASSWORD}
+# echo ${RABBITMQ_PASSWORD}
+# echo ${REDIS_PASSWORD}
+
+provide_login_credentials

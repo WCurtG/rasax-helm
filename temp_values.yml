@@ -15,7 +15,7 @@ rasax:
     # initialUser is the user which is created upon the initial start of Rasa X
     initialUser:
         # password for the Rasa X user
-        password: "RASAX_PW"
+        password: "INITIAL_USER_PASSWORD"
     # passwordSalt Rasa X uses to salt the user passwords
     passwordSalt: "workshop_salt"
     # token Rasa X accepts as authentication token from other Rasa services
@@ -38,16 +38,16 @@ rabbitmq:
     # rabbitmq settings of the subchart
     rabbitmq:
         # password which is used for the authentication
-        password: "workshop_rabbit"
+        password: "RABBITMQ_PASSWORD"
 global:
     # postgresql: global settings of the postgresql subchart
     postgresql:
         # postgresqlPassword is the password which is used when the postgresqlUsername equals "postgres"
-        postgresqlPassword: "workshop_post"
+        postgresqlPassword: "POSTGRES_PASSWORD"
     # redis: global settings of the postgresql subchart
     redis:
         # password to use in case there no external secret was provided
-        password: "workshop_redis"
+        password: "REDIS_PASSWORD"
 app:
     # from microk8s build-in registry
     name: "localhost:32000/"
