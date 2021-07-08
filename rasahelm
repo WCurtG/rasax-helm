@@ -11,7 +11,7 @@ boolean() {
 }
 
 # Get the VM external IP address
-export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
+EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
 
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
@@ -143,56 +143,7 @@ install_microk8s () {
     seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured"
 }
 
-# This will be run when the user is propmted to create a password or let the system create one. 
-rasax_pw () {
-    export RASAX_PW=$1
-    seperator echo_success "your new password will be $1" && 
-    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
-    mv tmp.yml values.yml &&
-    mv -f values.yml $HOME && 
-    seperator echo_success "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
-}
 
-generate_not_yet_specified_passwords() {
-  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
-  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
-  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
-  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
-}
-
-# Generates a random password when feed nothing. 
-get_specified_password_or_generate() {
-  if [[ -z $1 ]]
-  then
-    # shellcheck disable=SC2005
-    echo "$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
-  else
-    echo "$1"
-  fi
-}
-
-provide_login_credentials() {
-  # Explain how to access Rasa X
-  echo -e "The deployment is ready 🤖. "
-
-  if $IS_EMBEDDED_CLUSTER
-  then
-    # Determine the public IP address
-    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
-    LOGIN_URL="http://$2/login?username=me&password=$1"
-
-    # Check if the URL is available over the public IP address
-    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
-    if test "$STATUSCODE" -ne 200; then
-      # Determine the local IP address associated with a default gateway
-      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
-      # Return the URL with the local IP address if the login webside is not available over the public address
-      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
-    fi
-
-    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
-  fi
-}
 
 is_kubectl_installed_and_configured() {
   # detect if kubectl command is available
@@ -254,6 +205,56 @@ create_kubectl_namespace () {
     kubectl create namespace my-namespace &&
     seperator echo_success "kubectl namespace my-namespace has been created" || seperator echo_bold "kubectl namespace my-namespace failed to be created"
 }
+# This will be run when the user is propmted to create a password or let the system create one. 
+
+generate_not_yet_specified_passwords() {
+  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
+  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
+  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
+  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
+}
+
+# Generates a random password when feed nothing. 
+get_specified_password_or_generate() {
+  if [[ -z $1 ]]
+  then
+    # shellcheck disable=SC2005
+    echo "$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
+  else
+    echo "$1"
+  fi
+}
+
+provide_login_credentials() {
+  # Explain how to access Rasa X
+  echo -e "The deployment is ready 🤖. "
+
+    # Determine the public IP address
+    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+    LOGIN_URL="http://${EXTERNAL_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+
+    # Check if the URL is available over the public IP address
+    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
+    if test "$STATUSCODE" -ne 200; then
+      # Determine the local IP address associated with a default gateway
+      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
+      # Return the URL with the local IP address if the login webside is not available over the public address
+      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+    fi
+
+    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+}
+
+update_values () {
+    seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" && 
+    
+    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    
+    mv tmp.yml values.yml &&
+    mv -f values.yml $HOME &&
+    
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n POSTGRES_PASSWORD : ${POSTGRES_PASSWORD}\n \n RABBITMQ_PASSWORD : ${RABBITMQ_PASSWORD}\n \n REDIS_PASSWORD : ${REDIS_PASSWORD}\n" 
+}
 
 deploy_helm () {
     helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
@@ -279,17 +280,18 @@ add_alias &&
 is_snapd_installed_and_configured || install_snapd &&
 is_docker_installed_and_configured || install_docker &&
 is_microk8s_installed_and_configured || install_microk8s &&
-
-# This is how we set the intial user password and external IP
-read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-[[ $PW == "" ]] && rasax_pw $(get_specified_password_or_generate  ) $EXTERNAL_IP || rasax_pw $(get_specified_password_or_generate $PW) $EXTERNAL_IP
-
 is_kubectl_installed_and_configured || install_kubectl &&
 is_helm_installed_and_configured || install_helm &&
 is_octant_installed_and_configured || install_octant &&
 create_kubectl_namespace &&
+
+# This is how we set the intial user password 
+read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
+generate_not_yet_specified_passwords &&
+update_values &&
 deploy_helm &&
-provide_login_credentials $PW $EXTERNAL_IP &&
+provide_login_credentials &&
 read -e -p "Do you want to start Octant? [Y/n] " YN
 [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
 start_octant
