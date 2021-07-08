@@ -35,5 +35,4 @@ clean () {
 
 download &&
 clean &&
-seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master" &&
-cd rasax-helm-master
+seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master"

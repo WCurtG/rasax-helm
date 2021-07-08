@@ -8,6 +8,7 @@ Download the repo and unzip to your VM
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
+    cd rasax-helm-master
 ```
 
 First you need to add the repo to your Ubuntu 20.04 VM server and run start.sh
