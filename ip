@@ -10,7 +10,18 @@ boolean() {
    esac
 }
 
+INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
+
+# The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
+
+if $INSTALLER_DEBUG_MODE
+then
+  set +x
+  REDIRECT=/dev/stdout
+else
+  REDIRECT=/dev/null
+fi
 
 # Helper functions
 echo_success() {
@@ -26,77 +37,34 @@ fatal() {
   exit 1
 }
 
-run_loading_animation() {
-  i=1
-  sp="/-\|"
-  while :
-  do
-    sleep 0.1
-    # Don't show spinner when we are debugging
-    if ! $INSTALLER_DEBUG_MODE
-    then
-      printf "\b%s" ${sp:i++%${#sp}:1}
-    fi
-  done
+seperator() {
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  printf "\n \n $($1 "$2") \n \n"
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
-does_command_exist() {
-  command -v "$1" > /dev/null
+install_snapd () {
+    sudo apt install snapd -y > ${REDIRECT} &&
+    seperator "snapd has been installed"
+    seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" 
 }
 
-verify_downloader() {
-    # Return failure if it doesn't exist or is no executable
-    does_command_exist "$1" || return 1
-
-    # Set verified executable as our downloader program and return success
-    DOWNLOADER=$1
-    return 0
+install_microk8s () {
+    sudo snap install microk8s --classic && 
+    seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
+    sudo usermod -a -G microk8s $USER &&
+    sudo chown -f -R $USER ~/.kube &&
+    seperator echo_success "microk8s setting up" || seperator echo_bold "microk8s set up failed" &&
+    sudo su - $USER & 
+    seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
+    microk8s status --wait-ready && 
+    seperator echo_success "microk8s ready" || seperator echo_bold "microk8s not ready" &&
+    microk8s enable dns storage helm3 registry dashboard ingress > ${REDIRECT} &&
+    seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
+    cd $HOME/.kube &&
+    microk8s config > config &&
+    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured"
 }
 
-check_if_can_be_installed() {
-  OS=$(uname | tr '[:upper:]' '[:lower:]')
-  if [[ $OS != "linux" ]]
-  then
-    fatal "Running this script is only supported on Linux systems."
-  fi
-
-  verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
-}
-
-# check_if_can_be_installed && echo $DOWNLOADER
-
-is_kubectl_installed_and_configured() {
-  # detect if kubectl command is available
-  does_command_exist "kubectl" || return 1
-
-  # detect if server is configured
-  kubectl version --short | grep -q 'Server Version: .*' || return 1
-}
-
-# is_kubectl_installed_and_configured && echo kubectl is configured || echo kubectl is not configured
-
-export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
-
-rasax_pw () {
-    export RASAX_PW=$1
-    echo your new password will be $1 && 
-    printf "\n# -------------------------------\n#       New Password $1 saved \n# -------------------------------\n"
-    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
-    mv tmp.yml values.yml &&
-    mv -i values.yml $HOME && 
-    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
-}
-
-ip_only () {
-    sed "s/EXTERNAL_IP/$1/;" temp_values.yml > tmp.yml && 
-    mv tmp.yml values.yml &&
-    mv -i values.yml $HOME && 
-    printf "\n# Your VM external ip $1 it will be added to your values.yml file \n#" 
-}
-
-
-read -e -p "Do you want to set an new password? leave blank to keep current pw  " YN
-[[ $YN != "" ]] && echo great this is your new password $YN & rasax_pw $YN $EXTERNAL_IP || ip_only $EXTERNAL_IP
-
-
-
+install_microk8s
+seperator echo_success "Process Successful"
