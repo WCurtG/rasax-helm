@@ -4,7 +4,7 @@ The easy way to set up Rasa X on your VM server with shell.
 
 ## Installation
 
-To just clone the repo and unzip to your VM
+Download the repo and unzip to your VM
 
 ```bash
 curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
