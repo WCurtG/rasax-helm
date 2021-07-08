@@ -25,8 +25,7 @@ download () {
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
   sudo apt install unzip &&
   unzip master.zip &&
-  find $HOME -type f -iname "master.zip" -mmin -2 -delete
-  cd rasax-helm-master &&
+  cd rasax-helm-master
   }
 
 clean () {
