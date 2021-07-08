@@ -249,11 +249,10 @@ start_octant () {
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
 
-check_if_can_be_installed &&
-add_alias &&
-install_requirements &&
+# check_if_can_be_installed &&
+# add_alias &&
+# install_requirements &&
 install_docker &&
-configure_microk8s &&
 configure_microk8s &&
 install_kubectl &&
 install_helm &&

@@ -1,0 +1,8 @@
+#! bin/bash 
+
+# This is the easist way to add the Repo to your VM
+sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&
+wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
+sudo apt install unzip &&
+unzip master.zip &&
+cd rasax-helm-master 
