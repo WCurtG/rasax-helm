@@ -10,6 +10,8 @@ boolean() {
    esac
 }
 
+# Get the VM external IP address
+export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
 
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
@@ -34,6 +36,12 @@ echo_bold() {
 fatal() {
   echo "$@" >&2
   exit 1
+}
+
+seperator() {
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  printf "\n \n $($1 "$2") \n \n"
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
 run_loading_animation() {
@@ -91,13 +99,6 @@ is_kubectl_installed_and_configured() {
   kubectl version --short | grep -q 'Server Version: .*' || return 1
 }
 
-is_kubectl_installed_and_configured && echo kubectl is configured || echo kubectl is not configured
-
-is_docker_installed_and_configured () {
-    # detect if docker command is available
-    does_command_exist docker || return 1 
-}
-
 install_helm() {
   echo "Installing Helm command line interface  ..."
 
@@ -113,11 +114,48 @@ install_helm() {
   fi
 }
 
+is_docker_installed_and_configured () {
+    # detect if docker command is available
+    does_command_exist docker || return 1 
+}
+
 install_docker () {
     echo "Installing docker ..."
 
     curl -fsSL https://get.docker.com -o get-docker.sh > ${REDIRECT}
     sh get-docker.sh
+
+}
+
+install_snapd () {
+    sudo apt install snapd -y > ${REDIRECT} &&
+    seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" 
+}
+
+install_microk8s () {
+    sudo snap install microk8s --classic && 
+    seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
+    sudo usermod -a -G microk8s $USER
+    sudo chown -f -R $USER ~/.kube
+    sudo su - $USER & 
+    seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
+    microk8s status --wait-ready && 
+    seperator echo_success "microk8s ready" || seperator echo_bold "microk8s not ready" &&
+    microk8s enable dns storage helm3 registry dashboard ingress > ${REDIRECT} &&
+    seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
+    cd $HOME/.kube &&
+    microk8s config > config &&
+    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured"
+}
+
+# This will be run when the user is propmted to create a password or let the system create one. 
+rasax_pw () {
+    export RASAX_PW=$1
+    seperator echo_success "your new password will be $1" && 
+    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -f values.yml $HOME && 
+    seperator echo_success "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
 }
 
 generate_not_yet_specified_passwords() {
@@ -127,6 +165,7 @@ generate_not_yet_specified_passwords() {
   REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
 }
 
+# Generates a random password when feed nothing. 
 get_specified_password_or_generate() {
   if [[ -z $1 ]]
   then
@@ -137,81 +176,40 @@ get_specified_password_or_generate() {
   fi
 }
 
-export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
+# provide_login_credentials() {
+#   # Explain how to access Rasa X
+#   echo -e "The deployment is ready ðŸŽ‰. "
 
-rasax_pw () {
-    export RASAX_PW=$1
-    echo your new password will be $1 && 
-    printf "\n# -------------------------------\n#       New Password $1 saved \n# -------------------------------\n"
-    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
-    mv tmp.yml values.yml &&
-    mv -i values.yml $HOME && 
-    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
-}
+#   if $IS_EMBEDDED_CLUSTER
+#   then
+#     # Determine the public IP address
+#     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+#     LOGIN_URL="http://${PUBLIC_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
 
-install_requirements () {
-    sudo apt install snapd &&
-    printf "\n# -------------------------------\n#       snapd has been installed \n# -------------------------------\n" ||
-    printf "\n# -------------------------------\n#       snapd install failed \n# -------------------------------\n" &&
-    sudo snap install microk8s --classic && > ${REDIRECT}
-    printf "\n# -------------------------------\n#       microk8s has been installed \n# -------------------------------\n" ||
-    printf "\n# -------------------------------\n#       microk8s install failed \n# -------------------------------\n" &&
-    sudo usermod -a -G microk8s $USER > ${REDIRECT}
-    sudo chown -f -R $USER ~/.kube && > ${REDIRECT}
-    sudo su - $USER > ${REDIRECT}
-}
+#     # Check if the URL is available over the public IP address
+#     STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
+#     if test "$STATUSCODE" -ne 200; then
+#       # Determine the local IP address associated with a default gateway
+#       LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
+#       # Return the URL with the local IP address if the login webside is not available over the public address
+#       LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+#     fi
 
-configure_microk8s () {
-    microk8s status --wait-ready && > ${REDIRECT}
-    echo "------------------Kubectl step 4 success------------------" || 
-    echo "------------------Kubectl step 4 failure------------------" &&
-    microk8s enable dns storage helm3 registry dashboard ingress && > ${REDIRECT}
-    echo "------------------Kubectl step 5 success------------------" || 
-    echo "------------------Kubectl step 5 failure------------------" &&
-    cd $HOME/.kube && > ${REDIRECT}
-    echo "------------------Kubectl step 6 success------------------" || 
-    echo "------------------Kubectl step 6 failure------------------" &&
-    microk8s config > config && > ${REDIRECT}
-    echo "------------------Kubectl step 7 success------------------" || 
-    echo "------------------Kubectl step 7 failure------------------"
-}
-
-provide_login_credentials() {
-  # Explain how to access Rasa X
-  echo -e "The deployment is ready ðŸŽ‰. "
-
-  if $IS_EMBEDDED_CLUSTER
-  then
-    # Determine the public IP address
-    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
-    LOGIN_URL="http://${PUBLIC_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
-
-    # Check if the URL is available over the public IP address
-    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
-    if test "$STATUSCODE" -ne 200; then
-      # Determine the local IP address associated with a default gateway
-      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
-      # Return the URL with the local IP address if the login webside is not available over the public address
-      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
-    fi
-
-    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
-  fi
-}
+#     echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+#   fi
+# }
 
 install_kubectl () {
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl | bash > ${REDIRECT} 
+    sudo snap install kubectl --classic &&
 
-  # Check if the `helm` command is available
+    # Check if the `kubectl` command is available
     if ! does_command_exist "kubectl"
     then
       fatal "Something went wrong when trying to install the kubectl command line interface.\
-    T his is required for Rasa X deployment."
+      This is required for Rasa X deployment."
     fi
-    echo 'source /usr/share/bash-completion/bash_completion' >>~/.bashrc
-    echo 'alias k=kubectl' >>~/.bashrc
-    echo 'complete -F __start_kubectl k' >>~/.bashrc
+    # echo 'source /usr/share/bash-completion/bash_completion' >>~/.bashrc
+    # echo 'complete -F __start_kubectl k' >>~/.bashrc
 
 }
 
@@ -249,17 +247,22 @@ start_octant () {
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
 
-# check_if_can_be_installed &&
-# add_alias &&
-# install_requirements &&
+check_if_can_be_installed &&
+add_alias &&
+install_snapd &&
 install_docker &&
-configure_microk8s &&
+install_microk8s &&
+
+read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW == "" ]] && rasax_pw $(get_specified_password_or_generate  ) $EXTERNAL_IP || rasax_pw $(get_specified_password_or_generate $PW) $EXTERNAL_IP
+
 install_kubectl &&
 install_helm &&
 install_octant &&
 
-read -e -p "Do you want to set an new password? leave blank to keep current pw  " YN
-[[ $YN != "" ]] && echo great this is your new password $YN & rasax_pw $YN $EXTERNAL_IP || ip_only $EXTERNAL_IP
+read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW == "" ]] && rasax_pw $(get_specified_password_or_generate  ) $EXTERNAL_IP || rasax_pw $(get_specified_password_or_generate $PW) $EXTERNAL_IP
+
 
 create_kubectl_namespace &&
 deploy_helm &&
