@@ -18,6 +18,7 @@ seperator() {
   printf "\n \n $($1 "$2") \n \n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
+
 # This is the easist way to add the Repo to your VM
 
 download () {
@@ -26,7 +27,7 @@ download () {
   sudo apt install unzip &&
   unzip master.zip &&
   cd rasax-helm-master
-  }
+}
 
 clean () {
   find $HOME -type f -iname "master.zip" -mmin -2 -delete &&
