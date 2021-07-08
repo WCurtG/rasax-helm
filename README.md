@@ -4,7 +4,7 @@ The easy way to set up Rasa X on your VM server with shell.
 
 ## Installation
 
-Download the repo and unzip to your VM
+Download the repo and unzip to your VM for inspection
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
@@ -21,5 +21,5 @@ This is simple scrpit to deploy Rasa X on a Ubuntu 20.04 VM. This is done with d
 Upgrade your realse by running
 
 ```bash
-    cd rasax-helm-master && . ~/.bashrc & ./upgrade
+     . ~/.bashrc & cd rasax-helm-master && ./upgrade
 ```
