@@ -19,11 +19,16 @@ seperator() {
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 # This is the easist way to add the Repo to your VM
-sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&
-wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
-sudo apt install unzip &&
-unzip master.zip &&
-find $HOME -type f -iname "master.zip" -mmin -2 -delete &&
-sleep 10 & echo "Cleaning up your download" &&
-cd rasax-helm-master &&
+
+download () {
+  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&
+  wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
+  sudo apt install unzip &&
+  unzip master.zip &&
+  find $HOME -type f -iname "master.zip" -mmin -2 -delete &&
+  sleep 10 & echo "Cleaning up your download" &&
+  cd rasax-helm-master &&
+  }
+
+download &&
 seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master" 
