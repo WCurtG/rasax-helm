@@ -24,5 +24,6 @@ wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
 sudo apt install unzip &&
 unzip master.zip &&
 find $HOME -type f -iname "master.zip" -mmin -2 -delete &&
+sleep 10 & echo "Cleaning up your download" &&
 cd rasax-helm-master &&
 seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master" 
