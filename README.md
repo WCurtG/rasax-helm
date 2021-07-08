@@ -11,16 +11,16 @@ Download the repo and unzip to your VM
     cd rasax-helm-master
 ```
 
-First you need to add the repo to your Ubuntu 20.04 VM server and run start.sh
+This is simple scrpit to deploy Rasa X on a Ubuntu 20.04 VM. This is done with docker, microk8s, kubectl, helm and octant dashboard.
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
     cd rasax-helm-master && ./rasahelm
 ```
 
-After reconnecting run, this will install Octant, Kubectl and create a Rasa X dployment based on your values.yml file
+Upgrade your realse by running
 
 ```bash
-    . ~/.bashrc
-    ./step2.sh
+    . ~/.bashrc &
+    ./upgrade
 ```
