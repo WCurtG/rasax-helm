@@ -1,0 +1,267 @@
+#!/bin/bash
+
+set -e
+
+boolean() {
+  case $1 in
+    true) echo true ;;
+    false) echo false ;;
+    *) echo "Err: Unknown boolean value \"$1\"" 1>&2; exit 1 ;;
+   esac
+}
+
+
+# The script can either use `wget` or `curl` to pull other scripts
+DOWNLOADER=
+
+if $INSTALLER_DEBUG_MODE
+then
+  set +x
+  REDIRECT=/dev/stdout
+else
+  REDIRECT=/dev/null
+fi
+
+# Helper functions
+echo_success() {
+  echo -e "\e[32m${1}\e[0m"
+}
+
+echo_bold() {
+  echo -e "\e[1m${1}\e[0m"
+}
+
+fatal() {
+  echo "$@" >&2
+  exit 1
+}
+
+run_loading_animation() {
+  i=1
+  sp="/-\|"
+  while :
+  do
+    sleep 0.1
+    # Don't show spinner when we are debugging
+    if ! $INSTALLER_DEBUG_MODE
+    then
+      printf "\b%s" ${sp:i++%${#sp}:1}
+    fi
+  done
+}
+
+does_command_exist() {
+  command -v "$1" > /dev/null
+}
+
+verify_downloader() {
+    # Return failure if it doesn't exist or is no executable
+    does_command_exist "$1" || return 1
+
+    # Set verified executable as our downloader program and return success
+    DOWNLOADER=$1
+    return 0
+}
+
+check_if_can_be_installed() {
+  OS=$(uname | tr '[:upper:]' '[:lower:]')
+  if [[ $OS != "linux" ]]
+  then
+    fatal "Running this script is only supported on Linux systems."
+  fi
+
+  verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
+}
+
+add_alias () {
+    echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
+    echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
+    echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
+    echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
+    printf "\n# -------------------------------\n#       .bashrc has been updated \n#   -------------------------------\n" ||
+    printf "\n# -------------------------------\n#       .bashrc update has failed \n# -------------------------------\n"
+}
+
+
+is_kubectl_installed_and_configured() {
+  # detect if kubectl command is available
+  does_command_exist "kubectl" || return 1
+
+  # detect if server is configured
+  kubectl version --short | grep -q 'Server Version: .*' || return 1
+}
+
+is_kubectl_installed_and_configured && echo kubectl is configured || echo kubectl is not configured
+
+is_docker_installed_and_configured () {
+    # detect if docker command is available
+    does_command_exist docker || return 1 
+}
+
+install_helm() {
+  echo "Installing Helm command line interface  ..."
+
+  # Install Helm
+  download https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash > ${REDIRECT} 
+
+  # Check if the `helm` command is available
+  if ! does_command_exist "helm"
+  then
+    fatal "Something went wrong when trying to install the Helm command line interface.\
+ This is required for Rasa X deployment. Please create a question for this in the Rasa\
+ Forum (forum.rasa.com) so that we can help you."
+  fi
+}
+
+install_docker () {
+    echo "Installing docker ..."
+
+    curl -fsSL https://get.docker.com -o get-docker.sh > ${REDIRECT}
+    sh get-docker.sh
+}
+
+generate_not_yet_specified_passwords() {
+  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
+  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
+  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
+  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
+}
+
+get_specified_password_or_generate() {
+  if [[ -z $1 ]]
+  then
+    # shellcheck disable=SC2005
+    echo "$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
+  else
+    echo "$1"
+  fi
+}
+
+export EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/) &&
+
+rasax_pw () {
+    export RASAX_PW=$1
+    echo your new password will be $1 && 
+    printf "\n# -------------------------------\n#       New Password $1 saved \n# -------------------------------\n"
+    sed "s/EXTERNAL_IP/$2/;s/RASAX_PW/$1/" temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -i values.yml $HOME && 
+    printf "\n# We have updated your temp_values.yml file and renamed it, values.yml file with updated EXTERNAL_IP of $2 and RASAX_PW of $1 has been added to your root directory \n" 
+}
+
+install_requirements () {
+    sudo apt install snapd &&
+    printf "\n# -------------------------------\n#       snapd has been installed \n# -------------------------------\n" ||
+    printf "\n# -------------------------------\n#       snapd install failed \n# -------------------------------\n" &&
+    sudo snap install microk8s --classic && > ${REDIRECT}
+    printf "\n# -------------------------------\n#       microk8s has been installed \n# -------------------------------\n" ||
+    printf "\n# -------------------------------\n#       microk8s install failed \n# -------------------------------\n" &&
+    sudo usermod -a -G microk8s $USER > ${REDIRECT}
+    sudo chown -f -R $USER ~/.kube && > ${REDIRECT}
+    sudo su - $USER > ${REDIRECT}
+}
+
+configure_microk8s () {
+    microk8s status --wait-ready && > ${REDIRECT}
+    echo "------------------Kubectl step 4 success------------------" || 
+    echo "------------------Kubectl step 4 failure------------------" &&
+    microk8s enable dns storage helm3 registry dashboard ingress && > ${REDIRECT}
+    echo "------------------Kubectl step 5 success------------------" || 
+    echo "------------------Kubectl step 5 failure------------------" &&
+    cd $HOME/.kube && > ${REDIRECT}
+    echo "------------------Kubectl step 6 success------------------" || 
+    echo "------------------Kubectl step 6 failure------------------" &&
+    microk8s config > config && > ${REDIRECT}
+    echo "------------------Kubectl step 7 success------------------" || 
+    echo "------------------Kubectl step 7 failure------------------"
+}
+
+provide_login_credentials() {
+  # Explain how to access Rasa X
+  echo -e "The deployment is ready ðŸŽ‰. "
+
+  if $IS_EMBEDDED_CLUSTER
+  then
+    # Determine the public IP address
+    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+    LOGIN_URL="http://${PUBLIC_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+
+    # Check if the URL is available over the public IP address
+    STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
+    if test "$STATUSCODE" -ne 200; then
+      # Determine the local IP address associated with a default gateway
+      LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
+      # Return the URL with the local IP address if the login webside is not available over the public address
+      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+    fi
+
+    echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+  fi
+}
+
+install_kubectl () {
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl | bash > ${REDIRECT} 
+
+  # Check if the `helm` command is available
+    if ! does_command_exist "kubectl"
+    then
+      fatal "Something went wrong when trying to install the kubectl command line interface.\
+    T his is required for Rasa X deployment."
+    fi
+    echo 'source /usr/share/bash-completion/bash_completion' >>~/.bashrc
+    echo 'alias k=kubectl' >>~/.bashrc
+    echo 'complete -F __start_kubectl k' >>~/.bashrc
+
+}
+
+install_octant () {
+    cd $HOME &&
+    mkdir octant &&
+    cd octant &&
+    wget https://github.com/vmware-tanzu/octant/releases/download/v0.15.0/octant_0.15.0_Linux-64bit.deb &&
+    sudo dpkg -i octant_0.15.0_Linux-64bit.deb
+}
+
+create_kubectl_namespace () {
+    cd $HOME &&
+    kubectl create namespace my-namespace &&
+    printf "\n# -------------------------------\n#       kubectl namespace my-namespace has been created \n# -------------------------------\n" ||
+    printf "\n# -------------------------------\n#       kubectl namespace my-namespace failed to be created \n# -------------------------------\n"
+}
+
+deploy_helm () {
+    helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
+    helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
+    printf "\n# -------------------------------\n#       helm --namespace my-namespace using values.yml has been installed \n#  -------------------------------\n" ||
+    printf "\n# -------------------------------\n#       helm --namespace my-namespace install Failed \n# -------------------------------\n" &&
+    printf "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10.  3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
+    k get services && curl http://$EXTERNAL_IP/api/version" &&
+    printf "\n# -------------------------------\n#       You can also open in your browser here http://$EXTERNAL_IP:8000/api/version \n#    -------------------------------\n" &&
+    read -e -p "Does this look correct? [Y/n] " YN
+    [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
+    printf "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
+}
+
+start_octant () {
+    read -e -p "Would you like to start octant? [Y/n] " YN
+    [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
+    OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
+}
+
+check_if_can_be_installed &&
+add_alias &&
+install_requirements &&
+install_docker &&
+configure_microk8s &&
+configure_microk8s &&
+install_kubectl &&
+install_helm &&
+install_octant &&
+
+read -e -p "Do you want to set an new password? leave blank to keep current pw  " YN
+[[ $YN != "" ]] && echo great this is your new password $YN & rasax_pw $YN $EXTERNAL_IP || ip_only $EXTERNAL_IP
+
+create_kubectl_namespace &&
+deploy_helm &&
+start_octant
