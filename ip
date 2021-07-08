@@ -45,16 +45,14 @@ seperator() {
 
 install_snapd () {
     sudo apt install snapd -y > ${REDIRECT} &&
-    seperator "snapd has been installed"
     seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" 
 }
 
 install_microk8s () {
     sudo snap install microk8s --classic && 
     seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
-    sudo usermod -a -G microk8s $USER &&
-    sudo chown -f -R $USER ~/.kube &&
-    seperator echo_success "microk8s setting up" || seperator echo_bold "microk8s set up failed" &&
+    sudo usermod -a -G microk8s $USER
+    sudo chown -f -R $USER ~/.kube
     sudo su - $USER & 
     seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
     microk8s status --wait-ready && 
@@ -66,5 +64,6 @@ install_microk8s () {
     seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured"
 }
 
-install_microk8s
-seperator echo_success "Process Successful"
+install_snapd &&
+install_microk8s &&
+seperator echo_success "**** Process Successful ****"
