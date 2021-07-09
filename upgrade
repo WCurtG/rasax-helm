@@ -27,5 +27,11 @@ upgrade () {
     helm --namespace my-namespace upgrade --values values.yml my-release rasa-x/rasa-x
 } 
 
+status () {
+    k get services
+    curl http://${EXTERNAL_IP}:8000/api/version
+}
+
+
 upgrade &&
 seperator echo_success "Your namespace has been upgraded!"
