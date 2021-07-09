@@ -33,5 +33,5 @@ status () {
 }
 
 
-upgrade &&
+upgrade && status &&
 seperator echo_success "Your namespace has been upgraded!"
