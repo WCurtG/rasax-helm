@@ -20,7 +20,7 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
     cd rasax-helm-master && ./rasahelm
 ```
 
-## Upgrading your deployment
+## Upgrading or Rebuilding your deployment
 
 Upgrade your realse by running in a new shell
 
