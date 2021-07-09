@@ -1,0 +1,35 @@
+!# bin/bash
+
+# Helper functions
+EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
+
+echo_success() {
+  echo -e "\e[32m${1}\e[0m"
+}
+
+echo_bold() {
+  echo -e "\e[1m${1}\e[0m"
+}
+
+fatal() {
+  echo "$@" >&2
+  exit 1
+}
+
+seperator() {
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  printf "\n \n $($1 "$2") \n \n"
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+}
+
+start_lens () {
+    cd $HOME 
+    mkdir lens
+    cd lens
+    wget https://github.com/lensapp/lens/releases/download/v3.5.2/Lens-3.5.2.AppImage
+    chmod +x Lens-3.5.2.AppImage
+    ./Lens-3.5.2.AppImage
+}
+
+start_lens && 
+seperator echo_success "Lens has been installed at ~/lens \n \n To manually start lens run: \n \n $(echo_bold 'cd ~/lens && ./Lens-3.5.2.AppImage')"
