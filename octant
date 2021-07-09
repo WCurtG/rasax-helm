@@ -29,3 +29,6 @@ start_octant() {
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser & 
     seperator echo_success "Octant has started. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/"
 }
+
+start_octant && 
+seperator echo_success "Octant has been started."
