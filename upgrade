@@ -1,4 +1,5 @@
 #!/bin/bash
 set -euxo pipefail
 
+cd $HOME &&
 helm --namespace my-namespace upgrade --values values.yml my-release rasa-x/rasa-x
