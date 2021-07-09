@@ -27,7 +27,7 @@ Upgrade your realse by running in a new shell
 Start Octant
 
 ```bash
-    cd rasax-helm-master && ./octant
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant | sudo bash
 ```
 
 Install lens at ~/lens and start

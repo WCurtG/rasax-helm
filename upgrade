@@ -1,5 +1,31 @@
 #!/bin/bash
-set -euxo pipefail
 
-cd $HOME &&
-helm --namespace my-namespace upgrade --values values.yml my-release rasa-x/rasa-x
+# Helper functions
+EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
+
+echo_success() {
+  echo -e "\e[32m${1}\e[0m"
+}
+
+echo_bold() {
+  echo -e "\e[1m${1}\e[0m"
+}
+
+fatal() {
+  echo "$@" >&2
+  exit 1
+}
+
+seperator() {
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  printf "\n \n $($1 "$2") \n \n"
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+}
+
+upgrade () {
+    cd $HOME &&
+    helm --namespace my-namespace upgrade --values values.yml my-release rasa-x/rasa-x
+} 
+
+upgrade &&
+seperator echo_success "Your namespace has been upgraded!"
