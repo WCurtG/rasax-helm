@@ -34,7 +34,7 @@ rasax:
     # username specifies a name of this user
     username: "me"
     # password for this user (leave it empty to skip the user creation)
-    password: "RASAX_PW"
+    password: "INITIAL_USER_PASSWORD"
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##
@@ -693,7 +693,7 @@ rabbitmq:
     # username which is used for the authentication
     username: "user"
     # password which is used for the authentication
-    password: "password"
+    password: "RABBITMQ_PASSWORD"
     # existingPasswordSecret which should be used for the password instead of putting it in the values file
     existingPasswordSecret: ""
   # service specifies settings for exposing rabbit to other services
@@ -802,7 +802,7 @@ global:
     # postgresqlUsername which should be used by Rasa to connect to Postgres
     postgresqlUsername: "postgres"
     # postgresqlPassword is the password which is used when the postgresqlUsername equals "postgres"
-    postgresqlPassword: "password"
+    postgresqlPassword: "POSTGRES_PASSWORD"
     # existingSecret which should be used for the password instead of putting it in the values file
     existingSecret: ""
     # postgresDatabase which should be used by Rasa X
@@ -813,7 +813,7 @@ global:
   # redis: global settings of the postgresql subchart
   redis:
     # password to use in case there no external secret was provided
-    password: "redis-password"
+    password: "REDIS_PASSWORD"
 
   # additionalDeploymentLabels can be used to map organizational structures onto system objects
   # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
