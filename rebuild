@@ -42,7 +42,7 @@ rebuild_kubectl_namespace() {
 }
 
 status () {
-    k get services
+    k get services &&
     curl http://${EXTERNAL_IP}:8000/api/version
 }
 
