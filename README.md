@@ -1,6 +1,6 @@
 # rasax-helm
 
-The easy way to set up Rasa X on your VM server with shell.
+The easy way to set up Rasa X on your Ubuntu 20.04 VM server with Kubernetes management tools included.
 
 ## Download & Inspect
 
