@@ -2,7 +2,7 @@
 
 The easy way to set up Rasa X on your VM server with shell.
 
-## Installation
+## Download & Inspect
 
 Download the repo and unzip to your VM for inspection
 
@@ -11,6 +11,8 @@ Download the repo and unzip to your VM for inspection
     cd rasax-helm-master
 ```
 
+## Instalation
+
 This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deploys Rasa X. This is done with docker, microk8s, kubectl, helm and octant dashboard.
 
 ```bash
@@ -18,11 +20,15 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
     cd rasax-helm-master && ./rasahelm
 ```
 
+## Upgrading your deployment
+
 Upgrade your realse by running in a new shell
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/upgrade | sudo bash
 ```
+
+## Kubernetes Management
 
 Start Octant
 
@@ -30,7 +36,7 @@ Start Octant
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant | sudo bash
 ```
 
-Install lens at ~/lens and start
+Install lens at ~/lens and start on your VM
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/lens | sudo bash
