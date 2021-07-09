@@ -95,9 +95,10 @@ check_if_can_be_installed() {
 add_alias () {
     echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
     echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
-    echo "alias k="kubectl --namespace my-namespace"" >> ~/.bashrc &&
-    echo "alias h="helm --namespace my-namespace"" >> ~/.bashrc &&
+    echo 'alias k="kubectl --namespace my-namespace"' >> ~/.bashrc &&
+    echo 'alias h="helm --namespace my-namespace"' >> ~/.bashrc &&
     seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
+    . ~/.bashrc
 }
 
 is_snapd_installed_and_configured() {
@@ -136,7 +137,7 @@ install_microk8s () {
     seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
     microk8s status --wait-ready && 
     seperator echo_success "microk8s ready" || seperator echo_bold "microk8s not ready" &&
-    microk8s enable dns storage helm3 registry dashboard ingress > ${REDIRECT} &&
+    microk8s enable dns storage helm3 registry dashboard ingress &&
     seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
     cd $HOME/.kube &&
     microk8s config > config &&
@@ -231,7 +232,7 @@ provide_login_credentials() {
 
     # Determine the public IP address
     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
-    LOGIN_URL="http://${EXTERNAL_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+    LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=me&password=${INITIAL_USER_PASSWORD}"
 
     # Check if the URL is available over the public IP address
     STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
@@ -239,7 +240,7 @@ provide_login_credentials() {
       # Determine the local IP address associated with a default gateway
       LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
       # Return the URL with the local IP address if the login webside is not available over the public address
-      LOGIN_URL="http://${LOCAL_IP_ADDRESS}/login?username=me&password=${INITIAL_USER_PASSWORD}"
+      LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=me&password=${INITIAL_USER_PASSWORD}"
     fi
 
     echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
@@ -284,6 +285,7 @@ is_microk8s_installed_and_configured || install_microk8s &&
 is_kubectl_installed_and_configured || install_kubectl &&
 is_helm_installed_and_configured || install_helm &&
 is_octant_installed_and_configured || install_octant &&
+# might be causing an issue
 create_kubectl_namespace &&
 
 # This is how we set the intial user password 

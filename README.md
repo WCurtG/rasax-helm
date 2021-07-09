@@ -18,7 +18,7 @@ This is simple scrpit to deploy Rasa X on a Ubuntu 20.04 VM. This is done with d
     cd rasax-helm-master && ./rasahelm
 ```
 
-Upgrade your realse by running
+Upgrade your realse by running in a new shell
 
 ```bash
     cd rasax-helm-master && ./upgrade
