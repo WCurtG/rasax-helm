@@ -19,7 +19,8 @@ DOWNLOADER=
 # Environment variables
 DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
 ENABLE_DUCKLING=${ENABLE_DUCKLING}
-INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
+# INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
+INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-true}")
 
 # Passwords
 INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
@@ -259,6 +260,7 @@ update_values () {
 }
 
 deploy_helm () {
+    cd $HOME &&
     helm repo add rasa-x https://rasahq.github.io/rasa-x-helm && 
     helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "helm --namespace my-namespace using values.yml has been installed" || seperator echo_bold "helm --namespace my-namespace install Failed"&&
