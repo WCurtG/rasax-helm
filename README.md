@@ -23,3 +23,9 @@ Upgrade your realse by running in a new shell
 ```bash
     cd rasax-helm-master && ./upgrade
 ```
+
+Start Octant
+
+```bash
+    cd rasax-helm-master && ./octant
+```
