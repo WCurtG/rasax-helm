@@ -267,10 +267,10 @@ deploy_helm() {
     kubectl --namespace my-namespace get services && curl http://$EXTERNAL_IP/api/version' &&
     kubectl --namespace my-namespace get services &&
     curl http://${EXTERNAL_IP}:8000/api/version &&
-    seperator echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
+    seperator echo_success "You can also open in your browser here http://${EXTERNAL_IP}:8000/api/version" &&
     read -e -p "Does this look correct? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
+    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://${EXTERNAL_IP}:8002/#/"
 }
 
 start_octant() {
