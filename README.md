@@ -29,3 +29,9 @@ Start Octant
 ```bash
     cd rasax-helm-master && ./octant
 ```
+
+Install lens at ~/lens and start
+
+```bash
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/lens | sudo bash
+```
