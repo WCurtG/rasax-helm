@@ -252,7 +252,7 @@ provide_login_credentials() {
 update_values() {
   cd $HOME/rasax-helm-master &&
     seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" &&
-    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; sREDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
+    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
     mv tmp.yml values.yml &&
     mv -f values.yml $HOME &&
     seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP}\n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n POSTGRES_PASSWORD : ${POSTGRES_PASSWORD}\n \n RABBITMQ_PASSWORD : ${RABBITMQ_PASSWORD}\n\n REDIS_PASSWORD : ${REDIS_PASSWORD}\n"
@@ -263,8 +263,10 @@ deploy_helm() {
     helm repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
     helm --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "helm --namespace my-namespace using values.yml has been installed" || seperator echo_bold "helm --namespace my-namespace install Failed" &&
-    seperator echo_success "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
-    k get services && curl http://$EXTERNAL_IP/api/version" &&
+    seperator echo_success 'Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
+    kubectl --namespace my-namespace get services && curl http://$EXTERNAL_IP/api/version' &&
+    kubectl --namespace my-namespace get services &&
+    curl http://${EXTERNAL_IP}:8000/api/version &&
     seperator echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
     read -e -p "Does this look correct? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
@@ -288,7 +290,6 @@ check_if_can_be_installed &&
   is_octant_installed_and_configured || install_octant &&
   # might be causing an issue
   create_kubectl_namespace &&
-
   # This is how we set the intial user password
   read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
@@ -296,6 +297,4 @@ generate_not_yet_specified_passwords &&
   update_values &&
   deploy_helm &&
   provide_login_credentials &&
-  read -e -p "Do you want to start Octant? [Y/n] " YN
-[[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   start_octant
