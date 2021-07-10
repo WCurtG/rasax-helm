@@ -92,14 +92,22 @@ check_if_can_be_installed() {
   verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
 }
 
+shell_config_file() {
+ if [[ "${SHELL}" =~ zsh ]]; then
+  SHELL_CONFIG_FILE="$HOME/.zshrc"
+ elif [[ "${SHELL}" =~ bash ]]; then
+  SHELL_CONFIG_FILE="$HOME/.bashrc"
+ fi
+}
+
 add_alias() {
-  echo "alias kubectl='microk8s.kubectl'" >>~/.bashrc &&
-    echo "alias helm='microk8s.helm3'" >>~/.bashrc &&
-    echo 'alias k="kubectl --namespace my-namespace"' >>~/.bashrc &&
-    echo 'alias h="helm --namespace my-namespace"' >>~/.bashrc &&
-    echo "ip=${EXTERNAL_IP}" >>~/.bashrc &&
+  echo "alias kubectl='microk8s.kubectl'" >>${SHELL_CONFIG_FILE} &&
+    echo "alias helm='microk8s.helm3'" >>${SHELL_CONFIG_FILE} &&
+    echo 'alias k="kubectl --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
+    echo 'alias h="helm --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
+    echo "ip=${EXTERNAL_IP}" >>${SHELL_CONFIG_FILE} &&
     seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
-  . ~/.bashrc
+  . ${SHELL_CONFIG_FILE}
 }
 
 is_snapd_installed_and_configured() {
@@ -282,6 +290,7 @@ start_octant() {
 
 # This is the start of running code
 check_if_can_be_installed &&
+shell_config_file &&
   add_alias &&
   is_snapd_installed_and_configured || install_snapd &&
   is_docker_installed_and_configured || install_docker &&

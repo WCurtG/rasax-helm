@@ -450,3 +450,14 @@ Train the model & activate it
 Verify the change works
 
 
+info from 'sudo microk8s inspect'
+
+WARNING:  IPtables FORWARD policy is DROP. Consider enabling traffic forwarding with: sudo iptables -P FORWARD ACCEPT 
+The change can be made persistent with: sudo apt-get install iptables-persistent
+WARNING:  Docker is installed. 
+File "/etc/docker/daemon.json" does not exist. 
+You should create it and add the following lines: 
+{
+    "insecure-registries" : ["localhost:32000"] 
+}
+and then restart docker with: sudo systemctl restart docker
