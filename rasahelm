@@ -129,6 +129,10 @@ install_docker() {
   echo_bold "Installing docker ..."
 
   sudo apt install docker.io docker-compose -y &&
+  cd /etc/docker &&
+  echo "{
+    "insecure-registries" : ["localhost:32000"] 
+}" >daemon.json &&
     seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed"
 }
 
@@ -209,7 +213,7 @@ install_octant() {
 create_kubectl_namespace() {
   cd $HOME &&
     microk8s.kubectl create namespace my-namespace &&
-    seperator echo_success "kubectl namespace my-namespace has been created" || seperator echo_bold "kubectl namespace my-namespace failed to be created because it already exist"
+    seperator echo_success "microk8s.kubectl namespace my-namespace has been created" || seperator echo_bold "microk8s.kubectl namespace my-namespace failed to be created because it already exist"
 }
 
 rebuild_kubectl_namespace() {
@@ -272,14 +276,14 @@ deploy_helm() {
     microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
     microk8s.helm3 --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "microk8s.helm3 --namespace my-namespace using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace my-namespace install Failed" &&
-    seperator echo_success 'Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
+    echo_success 'Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
     microk8s.kubectl --namespace my-namespace get services && curl http://$EXTERNAL_IP/api/version' &&
-    microk8s.kubectl --namespace my-namespace get services &&
-    # curl http://${EXTERNAL_IP}:8000/api/version &&
-    seperator echo_success "You can also open in your browser here http://${EXTERNAL_IP}:8000/api/version" &&
+    microk8s.kubectl --namespace my-namespace get services
+    curl http://$EXTERNAL_IP:8000/api/version &&
+    echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
     read -e -p "Does this look correct? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://${EXTERNAL_IP}:8002/#/"
+    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
 }
 
 start_octant() {
@@ -295,8 +299,8 @@ shell_config_file &&
   is_snapd_installed_and_configured || install_snapd &&
   is_docker_installed_and_configured || install_docker &&
   is_microk8s_installed_and_configured || install_microk8s &&
-  is_kubectl_installed_and_configured || install_kubectl &&
-  is_helm_installed_and_configured || install_helm &&
+  # is_kubectl_installed_and_configured || install_kubectl &&
+  # is_helm_installed_and_configured || install_helm &&
   is_octant_installed_and_configured || install_octant &&
   # might be causing an issue
   create_kubectl_namespace &&
