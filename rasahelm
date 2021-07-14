@@ -23,7 +23,7 @@ DOWNLOADER=
 DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
 ENABLE_DUCKLING=${ENABLE_DUCKLING}
 # INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
-INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-true}")
+INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 
 # Passwords and Tokens that will be updated on the values.yaml file
 PASSWORD_SALT=${PASSWORD_SALT}
@@ -134,7 +134,7 @@ install_docker() {
   app_installed docker && seperator echo_success "docker has already been installed" ||
   (echo_bold "Installing docker ..."
 
-  sudo apt install docker.io docker-compose -y &&
+  sudo apt install docker.io docker-compose -y >${REDIRECT} &&
   cd /etc/docker &&
   echo "{
     "insecure-registries" : ["localhost:32000"] 
@@ -144,15 +144,15 @@ install_docker() {
 
 install_microk8s() {
   app_installed microk8s && seperator echo_success "microk8s has already been installed" ||
-  (sudo snap install microk8s --classic &&
+  (sudo snap install microk8s --classic >${REDIRECT} &&
     seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
     sudo usermod -a -G microk8s $USER
-  sudo chown -f -R $USER ~/.kube
-  sudo su - $USER &
-  seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
+    sudo chown -f -R $USER ~/.kube
+    sudo su - $USER &
+    seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
     microk8s status --wait-ready &&
     seperator echo_success "microk8s ready" || seperator echo_bold "microk8s not ready" &&
-    microk8s enable dns storage helm3 registry dashboard ingress &&
+    microk8s enable dns storage helm3 registry dashboard ingress >${REDIRECT} &&
     seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
     cd $HOME/.kube &&
     microk8s config >config &&
@@ -171,7 +171,7 @@ create_namespace() {
   (cd $HOME &&
     microk8s.kubectl create namespace $NAME_SPACE &&
     seperator echo_success "microk8s.kubectl namespace $NAME_SPACE has been created" || 
-    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." )
+    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." && fatal "Rasa X Helm Install Failed")
 }
 
 rebuild_namespace() {
@@ -180,13 +180,13 @@ rebuild_namespace() {
   cd $HOME &&
     microk8s.kubectl delete namespace $NAME_SPACE &&
     microk8s.kubectl create namespace $NAME_SPACE &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
+    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
     microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x
 }
 
 deploy_helm() {
   cd $HOME &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
+    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
     microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "microk8s.helm3 --namespace $NAME_SPACE using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace $NAME_SPACE install Failed" &&
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace $NAME_SPACE get services && curl http://$EXTERNAL_IP/api/version" &&
@@ -200,8 +200,8 @@ install_octant() {
   (cd $HOME &&
     mkdir octant &&
     cd octant &&
-    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
-    sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
+    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
+    sudo dpkg -i octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
     seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed")
 }
 
@@ -250,10 +250,8 @@ update_values() {
   cd $HOME/rasax-helm-master &&
     # Update the values.yaml file
     sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
-    
     mv tmp.yml values.yml &&
     mv -f values.yml $HOME &&
-    
     seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the $HOME/values.yml file to find and update other advanced deployment information \n" 
 }
 
@@ -270,11 +268,11 @@ add_alias &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
+(read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
+NAME_SPACE=${NAME_SPACE:-my-namespace}) &&
 create_namespace &&
 (read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW) &&
-(read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
-NAME_SPACE=${NAME_SPACE:-my-namespace}) &&
 generate_not_yet_specified_passwords &&
 update_values &&
 deploy_helm &&
