@@ -109,14 +109,14 @@ are_alias_configured () {
 }
 
 add_alias() {
-  echo "alias kubectl='microk8s.kubectl'" >>${SHELL_CONFIG_FILE} &&
-    echo "alias helm='microk8s.helm3'" >>${SHELL_CONFIG_FILE} &&
-    echo 'alias k="kubectl --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
-    echo 'alias h="helm --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
-    echo "ip=${EXTERNAL_IP}" >>${SHELL_CONFIG_FILE} &&
-    echo 'alias apiv="curl http://$ip:8000/api/version"' >>${SHELL_CONFIG_FILE} &&
-    seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
-  . ${SHELL_CONFIG_FILE}
+    shell_config_file
+    [ "$(grep "^alias kubectl=" ~/.bash*)" ] || echo "alias kubectl='microk8s.kubectl'" >>${SHELL_CONFIG_FILE}
+    [ "$(grep "^alias helm=" ~/.bash*)" ] || echo "alias helm='microk8s.helm3'" >>${SHELL_CONFIG_FILE}
+    [ "$(grep "^alias k=" ~/.bash*)" ] || echo 'alias k="kubectl --namespace my-namespace"' >>${SHELL_CONFIG_FILE}   
+    [ "$(grep "^alias h=" ~/.bash*)" ] || echo 'alias h="helm --namespace my-namespace"' >>${SHELL_CONFIG_FILE}
+    [ "$(grep "^ip=" ~/.bash*)" ] || echo "ip=${EXTERNAL_IP}" >>${SHELL_CONFIG_FILE}
+    [ "$(grep "^alias apiv=" ~/.bash*)" ] || echo 'alias apiv="curl http://$ip:8000/api/version"' >>${SHELL_CONFIG_FILE}
+    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n "k="kubectl --namespace my-namespace"" \n \n "h="helm --namespace my-namespace"" \n \n "apiv="curl http://${EXTERNAL_IP}:8000/api/version"" \n "
 }
 
 is_snapd_installed_and_configured() {
@@ -309,8 +309,7 @@ start_octant() {
 # This is the start of running code
 check_if_can_be_installed &&
 shell_config_file &&
-are_alias_configured &&
-  add_alias &&
+are_alias_configured || add_alias &&
   is_snapd_installed_and_configured || install_snapd &&
   is_docker_installed_and_configured || install_docker &&
   is_microk8s_installed_and_configured || install_microk8s &&
