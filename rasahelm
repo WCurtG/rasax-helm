@@ -22,7 +22,6 @@ DOWNLOADER=
 # Environment variables
 DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
 ENABLE_DUCKLING=${ENABLE_DUCKLING}
-# INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 
 # Passwords and Tokens that will be updated on the values.yaml file
@@ -126,25 +125,25 @@ app_installed () {
 
 install_snapd() {
   app_installed snap && seperator echo_success "snapd has already been installed" || 
-  (sudo apt install snapd -y >${REDIRECT} &&
-  seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed")
+  ( sudo apt install snapd -y >${REDIRECT} &&
+  seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed" )
 }
 
 install_docker() {
   app_installed docker && seperator echo_success "docker has already been installed" ||
-  (echo_bold "Installing docker ..."
+  ( echo_bold "Installing docker ..."
 
   sudo apt install docker.io docker-compose -y >${REDIRECT} &&
   cd /etc/docker &&
   echo "{
     "insecure-registries" : ["localhost:32000"] 
 }" >daemon.json &&
-    seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed")
+    seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed" )
 }
 
 install_microk8s() {
   app_installed microk8s && seperator echo_success "microk8s has already been installed" ||
-  (sudo snap install microk8s --classic >${REDIRECT} &&
+  ( sudo snap install microk8s --classic >${REDIRECT} &&
     seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
     sudo usermod -a -G microk8s $USER
     sudo chown -f -R $USER ~/.kube
@@ -156,7 +155,7 @@ install_microk8s() {
     seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
     cd $HOME/.kube &&
     microk8s config >config &&
-    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured")
+    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured" )
 }
 
 namespace_exist () {
@@ -167,11 +166,11 @@ namespace_exist () {
 }
 
 create_namespace() {
-  namespace_exist $NAME_SPACE && (seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" && rebuild_namespace) ||
-  (cd $HOME &&
+  namespace_exist $NAME_SPACE && ( seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" && rebuild_namespace ) ||
+  ( cd $HOME &&
     microk8s.kubectl create namespace $NAME_SPACE &&
     seperator echo_success "microk8s.kubectl namespace $NAME_SPACE has been created" || 
-    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." && fatal "Rasa X Helm Install Failed")
+    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." && fatal "Rasa X Helm Install Failed" )
 }
 
 rebuild_namespace() {
@@ -197,12 +196,12 @@ deploy_helm() {
 
 install_octant() {
   app_installed octant && seperator echo_success "octant has already been installed" ||
-  (cd $HOME &&
+  ( cd $HOME &&
     mkdir octant &&
     cd octant &&
     wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
     sudo dpkg -i octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
-    seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed")
+    seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed" )
 }
 
 # This will be run when the user is propmted to create a password or let the system create one.
@@ -268,11 +267,11 @@ add_alias &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
-(read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
-NAME_SPACE=${NAME_SPACE:-my-namespace}) &&
+( read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
+NAME_SPACE=${NAME_SPACE:-my-namespace} ) &&
 create_namespace &&
-(read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW) &&
+( read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW ) &&
 generate_not_yet_specified_passwords &&
 update_values &&
 deploy_helm &&
