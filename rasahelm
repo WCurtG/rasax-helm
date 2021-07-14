@@ -105,8 +105,8 @@ add_alias() {
     echo "alias helm='microk8s.helm3'" >>${SHELL_CONFIG_FILE} &&
     echo 'alias k="kubectl --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
     echo 'alias h="helm --namespace my-namespace"' >>${SHELL_CONFIG_FILE} &&
-    echo 'alias apiv="curl http://$ip:8000/api/version"' >>${SHELL_CONFIG_FILE} &&
     echo "ip=${EXTERNAL_IP}" >>${SHELL_CONFIG_FILE} &&
+    echo 'alias apiv="curl http://$ip:8000/api/version"' >>${SHELL_CONFIG_FILE} &&
     seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
   . ${SHELL_CONFIG_FILE}
 }
