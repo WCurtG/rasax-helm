@@ -10,13 +10,22 @@ boolean() {
    esac
 }
 
+
+# Sets the debug mode
 INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
-# Passwords
+
+# Passwords and Tokens that will be updated on the values.yaml file
+PASSWORD_SALT=${PASSWORD_SALT}
+RASA_X_TOKEN=${RASA_X_TOKEN}
 INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+RASA_TOKEN=${RASA_TOKEN}
 RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
+
+# Gets the ip of the current machine
 EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
+
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
 
@@ -53,20 +62,22 @@ does_command_exist() {
 }
 
 update_values () {
-    seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" && 
-    
-    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+  # Update the values.yaml file
+    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     
     mv tmp.yml values.yml &&
     mv -f values.yml $HOME &&
     
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n POSTGRES_PASSWORD : ${POSTGRES_PASSWORD}\n \n RABBITMQ_PASSWORD : ${RABBITMQ_PASSWORD}\n \n REDIS_PASSWORD : ${REDIS_PASSWORD}\n" 
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the $HOME/values.yml file to find and update other advanced deployment information \n" 
 }
 
 generate_not_yet_specified_passwords() {
+  PASSWORD_SALT=$(get_specified_password_or_generate "${PASSWORD_SALT}")
+  RASA_X_TOKEN=$(get_specified_password_or_generate "${RASA_X_TOKEN}")
   INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
-  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
+  RASA_TOKEN=$(get_specified_password_or_generate "${RASA_TOKEN}")
   RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
+  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
   REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
 }
 
@@ -101,25 +112,10 @@ provide_login_credentials() {
 
     echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
 }
-# read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-# [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
 
-# generate_not_yet_specified_passwords &&
-# update_values &&
-# # echo ${INITIAL_USER_PASSWORD}
-# # echo ${POSTGRES_PASSWORD}
-# # echo ${RABBITMQ_PASSWORD}
-# # echo ${REDIS_PASSWORD}
+read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
 
-# provide_login_credentials
-
-add_alias () {
-    echo "alias kubectl='microk8s.kubectl'" >> ~/.bashrc &&
-    echo "alias helm='microk8s.helm3'" >> ~/.bashrc &&
-    echo 'alias k="kubectl --namespace my-namespace"' >> ~/.bashrc &&
-    echo 'alias h="helm --namespace my-namespace"' >> ~/.bashrc &&
-    seperator echo_success "alias' have been added to .bashrc" || seperator echo_bold "alias' failed to be added to .bashrc"
-    . ~/.bashrc
-}
-
-add_alias
+generate_not_yet_specified_passwords &&
+update_values &&
+provide_login_credentials
