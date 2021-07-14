@@ -33,7 +33,9 @@ RASA_TOKEN=${RASA_TOKEN}
 RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
+NAME_SPACE=${NAME_SPACE}
 
+# Installer debug vars
 if $INSTALLER_DEBUG_MODE; then
   set +x
   REDIRECT=/dev/stdout
@@ -103,10 +105,6 @@ shell_config_file() {
  fi
 }
 
-are_alias_configured () {
-  # detect if docker command is available
-  does_command_exist k || return 1
-}
 
 add_alias() {
     shell_config_file
@@ -119,39 +117,34 @@ add_alias() {
     seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n "k="kubectl --namespace my-namespace"" \n \n "h="helm --namespace my-namespace"" \n \n "apiv="curl http://${EXTERNAL_IP}:8000/api/version"" \n "
 }
 
-is_snapd_installed_and_configured() {
-  # detect if snapd command is available
-  does_command_exist "snapd" || return 1
+app_installed () {
+  # Return failure if it doesn't exist or is no executable
+  which "$1" >/dev/null || return 1
+
+  return 0
 }
 
 install_snapd() {
-  sudo apt install snapd -y >${REDIRECT} &&
-    seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed"
-}
-
-is_docker_installed_and_configured() {
-  # detect if docker command is available
-  does_command_exist docker || return 1
+  app_installed snap && seperator echo_success "snapd has already been installed" || 
+  (sudo apt install snapd -y >${REDIRECT} &&
+  seperator echo_success "snapd has been installed" || seperator echo_bold "snapd install failed")
 }
 
 install_docker() {
-  echo_bold "Installing docker ..."
+  app_installed docker && seperator echo_success "docker has already been installed" ||
+  (echo_bold "Installing docker ..."
 
   sudo apt install docker.io docker-compose -y &&
   cd /etc/docker &&
   echo "{
     "insecure-registries" : ["localhost:32000"] 
 }" >daemon.json &&
-    seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed"
-}
-
-is_microk8s_installed_and_configured() {
-  # detect if microk8s command is available
-  does_command_exist "microk8s" || return 1
+    seperator echo_success "docker has been installed" || seperator echo_bold "docker install failed")
 }
 
 install_microk8s() {
-  sudo snap install microk8s --classic &&
+  app_installed microk8s && seperator echo_success "microk8s has already been installed" ||
+  (sudo snap install microk8s --classic &&
     seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
     sudo usermod -a -G microk8s $USER
   sudo chown -f -R $USER ~/.kube
@@ -163,74 +156,53 @@ install_microk8s() {
     seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
     cd $HOME/.kube &&
     microk8s config >config &&
-    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured"
+    seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured")
 }
 
-is_kubectl_installed_and_configured() {
-  # detect if kubectl command is available
-  does_command_exist "kubectl" || return 1
+namespace_exist () {
+  # Return failure if it doesn't exist or is no executable
+  microk8s.kubectl get ns "$1" >/dev/null || return 1
 
-  # detect if server is configured
-  kubectl version --short | grep -q 'Server Version: .*' || return 1
+  return 0
 }
 
-install_kubectl() {
-  sudo snap install kubectl --classic &&
-
-    # Check if the `kubectl` command is available
-    if ! does_command_exist "kubectl"; then
-      fatal "Something went wrong when trying to install the kubectl command line interface.\
-      This is required for Rasa X deployment."
-    fi
-  # echo 'source /usr/share/bash-completion/bash_completion' >>~/.bashrc
-  # echo 'complete -F __start_kubectl k' >>~/.bashrc
-
+create_namespace() {
+  namespace_exist $NAME_SPACE && (seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" && rebuild_namespace) ||
+  (cd $HOME &&
+    microk8s.kubectl create namespace $NAME_SPACE &&
+    seperator echo_success "microk8s.kubectl namespace $NAME_SPACE has been created" && || 
+    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." )
 }
 
-is_helm_installed_and_configured() {
-  # detect if helm command is available
-  does_command_exist "helm" || return 1
+rebuild_namespace() {
+  read -e -p "Would you like to rebuild $NAME_SPACE? [Y/n] " YN
+  [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
+  cd $HOME &&
+    microk8s.kubectl delete namespace $NAME_SPACE &&
+    microk8s.kubectl create namespace $NAME_SPACE &&
+    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
+    microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x
 }
 
-install_helm() {
-  echo "Installing Helm command line interface  ..."
-
-  # Install Helm
-  sudo snap install helm --classic >${REDIRECT}
-
-  # Check if the `helm` command is available
-  if ! does_command_exist "helm"; then
-    fatal "Something went wrong when trying to install the Helm command line interface.\
- This is required for Rasa X deployment. Please create a question for this in the Rasa\
- Forum (forum.rasa.com) so that we can help you."
-  fi
-}
-
-is_octant_installed_and_configured() {
-  # detect if octant command is available
-  does_command_exist "octant" || return 1
+deploy_helm() {
+  cd $HOME &&
+    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
+    microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x &&
+    seperator echo_success "microk8s.helm3 --namespace $NAME_SPACE using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace $NAME_SPACE install Failed" &&
+    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace $NAME_SPACE get services && curl http://$EXTERNAL_IP/api/version" &&
+    microk8s.kubectl --namespace $NAME_SPACE get services
+    # curl http://$EXTERNAL_IP:8000/api/version &&
+    seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
 }
 
 install_octant() {
-  cd $HOME &&
+  app_installed octant && seperator echo_success "octant has already been installed" ||
+  (cd $HOME &&
     mkdir octant &&
     cd octant &&
     wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
-    sudo dpkg -i octant_0.21.0_Linux-64bit.deb
-}
-
-create_kubectl_namespace() {
-  cd $HOME &&
-    microk8s.kubectl create namespace my-namespace &&
-    seperator echo_success "microk8s.kubectl namespace my-namespace has been created" || seperator echo_bold "microk8s.kubectl namespace my-namespace failed to be created because it already exist"
-}
-
-rebuild_kubectl_namespace() {
-  cd $HOME &&
-    microk8s.kubectl delete namespace my-namespace &&
-    microk8s.kubectl create namespace my-namespace &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
-    microk8s.helm3 --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x
+    sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
+    seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed")
 }
 
 # This will be run when the user is propmted to create a password or let the system create one.
@@ -285,21 +257,6 @@ update_values() {
     seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the $HOME/values.yml file to find and update other advanced deployment information \n" 
 }
 
-deploy_helm() {
-  cd $HOME &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm &&
-    microk8s.helm3 --namespace my-namespace install --values values.yml my-release rasa-x/rasa-x &&
-    seperator echo_success "microk8s.helm3 --namespace my-namespace using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace my-namespace install Failed" &&
-    echo_success "Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
-    microk8s.kubectl --namespace my-namespace get services && curl http://$EXTERNAL_IP/api/version" &&
-    microk8s.kubectl --namespace my-namespace get services
-    # curl http://$EXTERNAL_IP:8000/api/version &&
-    echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
-    read -e -p "Does this look correct? [Y/n] " YN
-  [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-    echo_bold "The API endpoint looks correct, next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
-}
-
 start_octant() {
   read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
@@ -309,20 +266,17 @@ start_octant() {
 # This is the start of running code
 check_if_can_be_installed &&
 shell_config_file &&
-are_alias_configured || add_alias &&
-  is_snapd_installed_and_configured || install_snapd &&
-  is_docker_installed_and_configured || install_docker &&
-  is_microk8s_installed_and_configured || install_microk8s &&
-  # is_kubectl_installed_and_configured || install_kubectl &&
-  # is_helm_installed_and_configured || install_helm &&
-  is_octant_installed_and_configured || install_octant &&
-  # might be causing an issue
-  create_kubectl_namespace &&
-  # This is how we set the intial user password
-  read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
+add_alias &&
+install_snapd &&
+install_docker &&
+install_microk8s &&
+create_namespace &&
+(read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+[[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW) &&
+(read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
+NAME_SPACE=${NAME_SPACE:-my-namespace}) &&
 generate_not_yet_specified_passwords &&
-  update_values &&
-  deploy_helm &&
-  provide_login_credentials &&
-  start_octant
+update_values &&
+deploy_helm &&
+provide_login_credentials &&
+start_octant
