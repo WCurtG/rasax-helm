@@ -280,7 +280,7 @@ deploy_helm() {
     echo_success 'Lets verify you can access the endpoint from within the VM. You should get a result that looks like this  {"rasa":{"production":"1.10. 3","worker":"0.0.0"},"rasa-x":"0.30.1",... You can also open in your browser here http://$EXTERNAL_IP:8000/api/version
     microk8s.kubectl --namespace my-namespace get services && curl http://$EXTERNAL_IP/api/version' &&
     microk8s.kubectl --namespace my-namespace get services
-    curl http://$EXTERNAL_IP:8000/api/version &&
+    # curl http://$EXTERNAL_IP:8000/api/version &&
     echo_success "You can also open in your browser here http://$EXTERNAL_IP:8000/api/version" &&
     read -e -p "Does this look correct? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
