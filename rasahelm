@@ -25,10 +25,13 @@ ENABLE_DUCKLING=${ENABLE_DUCKLING}
 # INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-true}")
 
-# Passwords
+# Passwords and Tokens that will be updated on the values.yaml file
+PASSWORD_SALT=${PASSWORD_SALT}
+RASA_X_TOKEN=${RASA_X_TOKEN}
 INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+RASA_TOKEN=${RASA_TOKEN}
 RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
 
 if $INSTALLER_DEBUG_MODE; then
@@ -265,11 +268,13 @@ provide_login_credentials() {
 
 update_values() {
   cd $HOME/rasax-helm-master &&
-    seperator echo_success "your new password will be ${INITIAL_USER_PASSWORD}" &&
-    sed "s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
+    # Update the values.yaml file
+    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    
     mv tmp.yml values.yml &&
     mv -f values.yml $HOME &&
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP}\n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n POSTGRES_PASSWORD : ${POSTGRES_PASSWORD}\n \n RABBITMQ_PASSWORD : ${RABBITMQ_PASSWORD}\n\n REDIS_PASSWORD : ${REDIS_PASSWORD}\n"
+    
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the $HOME/values.yml file to find and update other advanced deployment information \n" 
 }
 
 deploy_helm() {
