@@ -11,7 +11,6 @@ Download the repo and unzip to your VM for inspection
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
-    cd rasax-helm-master
 ```
 
 ## Instalation
@@ -20,7 +19,7 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash
-    cd rasax-helm-master && ./rxhelm
+    ./rxhelm
 ```
 
 ## Upgrading or Rebuilding your deployment
