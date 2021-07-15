@@ -216,10 +216,10 @@ rebuild_namespace() {
   read -e -p "Would you like to delete and rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   ( ( cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
-    microk8s.kubectl create namespace "$NAME_SPACE" &&
-    seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" && 
-    password_question ) || 
-    seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal ) ||
+      microk8s.kubectl create namespace "$NAME_SPACE" &&
+      seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" && 
+      password_question ) || 
+        seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal ) ||
   upgrade_namespace
 }
 
@@ -229,7 +229,7 @@ upgrade_namespace() {
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   cd "$HOME" && 
   microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x || 
-  seperator echo_error "$NAME_SPACE has not been upgraded. Exiting.." fatal
+  seperator echo_error "namespace $NAME_SPACE has not been upgraded. Exiting.." fatal
 }
 
 password_question() {
