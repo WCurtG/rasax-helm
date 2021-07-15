@@ -19,7 +19,7 @@ INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 if $INSTALLER_DEBUG_MODE; then
   set +x
   REDIRECT=/dev/stdout
-  SUDO_REDIRECT=| sudo tee file
+  SUDO_REDIRECT="| sudo tee file"
 else
   REDIRECT=/dev/null
 fi
