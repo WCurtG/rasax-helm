@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# Exit immediately if one of the commands ends with a non-zero exit code
 set -e
 
+# Used in the installer debug mode 
 boolean() {
   case $1 in
   true) echo true ;;
@@ -13,16 +15,17 @@ boolean() {
   esac
 }
 
+INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
+
 # Get the external IP address for VM
 EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
 
 # The script can either use `wget` or `curl` to pull other scripts
 DOWNLOADER=
 
-# Environment variables
+# Environment variables that can be set by the user before running the script (e.g. export VAR_TO_SET="var-value")
 DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
 ENABLE_DUCKLING=${ENABLE_DUCKLING}
-INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 
 # Passwords and Tokens that will be updated on the values.yaml file
 PASSWORD_SALT=${PASSWORD_SALT}
