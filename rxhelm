@@ -315,7 +315,7 @@ add_alias() {
     [ "$(grep "^alias h=" ~/.bash*)" ] || echo "alias h=\"helm --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
     [ "$(grep "^VM_IP=" ~/.bash*)" ] || echo "VM_IP=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo "alias api_v=\"curl http://$VM_IP:8000/api/version\"" >>"${SHELL_CONFIG_FILE}"
-    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n \"k=\"kubectl --namespace ${NAME_SPACE}\"\" \n \n \"h=\"helm --namespace ${NAME_SPACE}\"\" \n \n \"api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"\" \n " &&
+    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n "k=\"kubectl --namespace ${NAME_SPACE}\"" \n \n "h=\"helm --namespace ${NAME_SPACE}\"" \n \n "api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"" \n " &&
     start_octant
 }
 
