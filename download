@@ -19,6 +19,7 @@ INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 if $INSTALLER_DEBUG_MODE; then
   set +x
   REDIRECT=/dev/stdout
+  SUDO_REDIRECT=| sudo tee file
 else
   REDIRECT=/dev/null
 fi
@@ -39,16 +40,16 @@ fatal() {
 
 seperator() {
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
-  printf "\n \n $($1 "$2") \n \n"
+  echo "\n \n $($1 "$2") \n \n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
 # This is the easist way to add the Repo to your VM
 
 download () {
-  sudo apt update >${REDIRECT} && sudo apt upgrade -y >${REDIRECT} && sudo apt autoremove -y >${REDIRECT} &&
+  sudo apt update >${SUDO_REDIRECT} && sudo apt upgrade -y >${SUDO_REDIRECT} && sudo apt autoremove -y >${SUDO_REDIRECT} &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
-  sudo apt install unzip >${REDIRECT} &&
+  sudo apt install unzip >${SUDO_REDIRECT} &&
   unzip master.zip >${REDIRECT}
 }
 
