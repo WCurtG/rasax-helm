@@ -270,7 +270,7 @@ deploy_helm() {
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services &&
     # curl http://$EXTERNAL_IP:8000/api/version &&
-    seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/" &&
+    seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/overview/namespace/$NAME_SPACE" &&
     provide_login_credentials
 }
 
