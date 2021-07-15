@@ -158,6 +158,16 @@ install_microk8s() {
     seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured" )
 }
 
+install_octant() {
+  app_installed octant && seperator echo_success "octant has already been installed" ||
+  ( cd "$HOME" &&
+    mkdir octant &&
+    cd octant &&
+    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
+    sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
+    seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed" )
+}
+
 namespace_exist () {
   # Return failure if it doesn't exist or is no executable
   microk8s.kubectl get ns "$1" >/dev/null || return 1
@@ -168,52 +178,34 @@ namespace_exist () {
 create_namespace() {
   echo Creating namespace "$NAME_SPACE"....
   namespace_exist "$NAME_SPACE" && ( seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" already exist" && rebuild_namespace ) ||
-  cd "$HOME" &&
-    microk8s.kubectl create namespace "$NAME_SPACE" &&
-    seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" || 
-    seperator echo_bold "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." && fatal "Rasa X Helm Install Failed"
+  ( cd "$HOME" &&
+    microk8s.kubectl create namespace "$NAME_SPACE" ) &&
+    ( seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ) || 
+    ( seperator echo_bold "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." && fatal "Rasa X Helm Install Failed" )
 }
 
 rebuild_namespace() {
   read -e -p "Would you like to rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-  cd "$HOME" &&
-    microk8s.kubectl delete namespace "$NAME_SPACE" &&
-    microk8s.kubectl create namespace "$NAME_SPACE" &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
-    microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x
+  ( cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" ) ||
+  upgrade_namespace
 }
 
-deploy_helm() {
-  cd "$HOME" &&
-    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
-    microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x &&
-    seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" &&
-    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
-    microk8s.kubectl --namespace "$NAME_SPACE" get services
-    # curl http://$EXTERNAL_IP:8000/api/version &&
-    seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
-}
-
-install_octant() {
-  app_installed octant && seperator echo_success "octant has already been installed" ||
-  cd "$HOME" &&
-    mkdir octant &&
-    cd octant &&
-    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
-    sudo dpkg -i octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
-    seperator echo_success "octant has been installed" || seperator echo_bold "octant install failed" 
+upgrade_namespace() {
+  cd "$HOME" && 
+  microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x
 }
 
 # This will be run when the user is propmted to create a password or let the system create one.
 generate_not_yet_specified_passwords() {
-  PASSWORD_SALT=$(get_specified_password_or_generate "${PASSWORD_SALT}")
-  RASA_X_TOKEN=$(get_specified_password_or_generate "${RASA_X_TOKEN}")
-  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}")
-  RASA_TOKEN=$(get_specified_password_or_generate "${RASA_TOKEN}")
-  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}")
-  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}")
-  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}")
+  PASSWORD_SALT=$(get_specified_password_or_generate "${PASSWORD_SALT}") &&
+  RASA_X_TOKEN=$(get_specified_password_or_generate "${RASA_X_TOKEN}") &&
+  INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}") &&
+  RASA_TOKEN=$(get_specified_password_or_generate "${RASA_TOKEN}") &&
+  RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}") &&
+  POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}") &&
+  REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}") &&
+  update_values
 }
 
 # Generates a random password when feed nothing.
@@ -224,6 +216,28 @@ get_specified_password_or_generate() {
   else
     echo "$1"
   fi
+}
+
+update_values() {
+  cd "$HOME"/rasax-helm-master &&
+    # Update the values.yaml file
+    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -f values.yml "$HOME" &&
+    ( seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" ) &&
+    deploy_helm
+}
+
+deploy_helm() {
+  cd "$HOME" &&
+    microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
+    microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x &&
+    seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" &&
+    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
+    microk8s.kubectl --namespace "$NAME_SPACE" get services &&
+    # curl http://$EXTERNAL_IP:8000/api/version &&
+    seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/" &&
+    provide_login_credentials
 }
 
 provide_login_credentials() {
@@ -246,15 +260,6 @@ provide_login_credentials() {
   echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
 }
 
-update_values() {
-  cd "$HOME"/rasax-helm-master &&
-    # Update the values.yaml file
-    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
-    mv tmp.yml values.yml &&
-    mv -f values.yml "$HOME" &&
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" 
-}
-
 start_octant() {
   read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
@@ -268,6 +273,7 @@ add_alias &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
+install_octant &&
 read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
 NAME_SPACE=${NAME_SPACE:-my-namespace} 
 echo $NAME_SPACE
@@ -276,7 +282,4 @@ create_namespace &&
 read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW &&
 generate_not_yet_specified_passwords &&
-update_values &&
-deploy_helm &&
-provide_login_credentials &&
 start_octant
