@@ -126,13 +126,14 @@ shell_config_file() {
 
 add_alias() {
     shell_config_file
+    [ "$(grep "^NAME_SPACE=" ~/.bash*)" ] || echo "NAME_SPACE=${NAME_SPACE}" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias kubectl=" ~/.bash*)" ] || echo "alias kubectl='microk8s.kubectl'" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias helm=" ~/.bash*)" ] || echo "alias helm='microk8s.helm3'" >>"${SHELL_CONFIG_FILE}"
-    [ "$(grep "^alias k=" ~/.bash*)" ] || echo 'alias k="kubectl --namespace my-namespace"' >>"${SHELL_CONFIG_FILE}" 
-    [ "$(grep "^alias h=" ~/.bash*)" ] || echo 'alias h="helm --namespace my-namespace"' >>"${SHELL_CONFIG_FILE}" 
-    [ "$(grep "^vm_ip=" ~/.bash*)" ] || echo "vm_ip=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
-    [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo 'alias api_v="curl http://$vm_ip:8000/api/version"' >>"${SHELL_CONFIG_FILE}"
-    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n \"k=\"kubectl --namespace my-namespace\"\" \n \n \"h=\"helm --namespace my-namespace\"\" \n \n \"api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"\" \n "
+    [ "$(grep "^alias k=" ~/.bash*)" ] || echo "alias k=\"kubectl --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
+    [ "$(grep "^alias h=" ~/.bash*)" ] || echo "alias h=\"helm --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
+    [ "$(grep "^VM_IP=" ~/.bash*)" ] || echo "VM_IP=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
+    [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo "alias api_v=\"curl http://$VM_IP:8000/api/version\"" >>"${SHELL_CONFIG_FILE}"
+    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n \"k=\"kubectl --namespace ${NAME_SPACE}\"\" \n \n \"h=\"helm --namespace ${NAME_SPACE}\"\" \n \n \"api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"\" \n "
 }
 
 app_installed () {
@@ -302,21 +303,12 @@ start_octant() {
 }
 
 # This is the start of running code
-check_if_can_be_installed
-# shell_config_file
-add_alias &&
+check_if_can_be_installed &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
 install_octant &&
-# read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
-# NAME_SPACE=${NAME_SPACE:-my-namespace} 
-# echo $NAME_SPACE
-# echo export NAME_SPACE=$NAME_SPACE &&
-# create_namespace &&
-# read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-# [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW &&
-# generate_not_yet_specified_passwords &&
 namespace_question &&
 password_question &&
+add_alias &&
 start_octant
