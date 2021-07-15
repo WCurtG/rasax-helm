@@ -12,14 +12,15 @@ echo_bold() {
 }
 
 fatal() {
+  echo -e "\e[1m${1}\e[0m"
   echo "$@" >&2
   exit 1
 }
 
 seperator() {
-  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  yes '=' | head -n$(($(tput cols) * 1)) | tr -d '\n'
   printf "\n \n $($1 "$2") \n \n"
-  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  yes '=' | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
 
@@ -27,8 +28,8 @@ start_octant() {
   read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
     ( seperator echo_success "Octant is starting. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/" &&
-    OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser )||
-    echo_bold ( fatal "Octant failed to start." )
+    OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser ) ||
+    fatal "Octant failed to start."
 }
 
 start_octant
