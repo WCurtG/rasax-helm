@@ -57,9 +57,9 @@ fatal() {
 }
 
 seperator() {
-  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  yes '=' | head -n$(($(tput cols) * 1)) | tr -d '\n'
   printf "\n \n $($1 "$2") \n \n"
-  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  yes '=' | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
 run_loading_animation() {
@@ -98,21 +98,21 @@ check_if_can_be_installed() {
 
 shell_config_file() {
  if [[ "${SHELL}" =~ zsh ]]; then
-  SHELL_CONFIG_FILE="$HOME/.zshrc"
+  SHELL_CONFIG_FILE=""$HOME"/.zshrc"
  elif [[ "${SHELL}" =~ bash ]]; then
-  SHELL_CONFIG_FILE="$HOME/.bashrc"
+  SHELL_CONFIG_FILE=""$HOME"/.bashrc"
  fi
 }
 
 
 add_alias() {
     shell_config_file
-    [ "$(grep "^alias kubectl=" ~/.bash*)" ] || echo "alias kubectl='microk8s.kubectl'" >>${SHELL_CONFIG_FILE}
-    [ "$(grep "^alias helm=" ~/.bash*)" ] || echo "alias helm='microk8s.helm3'" >>${SHELL_CONFIG_FILE}
-    [ "$(grep "^alias k=" ~/.bash*)" ] || echo 'alias k="kubectl --namespace my-namespace"' >>${SHELL_CONFIG_FILE}   
-    [ "$(grep "^alias h=" ~/.bash*)" ] || echo 'alias h="helm --namespace my-namespace"' >>${SHELL_CONFIG_FILE}
-    [ "$(grep "^ip=" ~/.bash*)" ] || echo "ip=${EXTERNAL_IP}" >>${SHELL_CONFIG_FILE}
-    [ "$(grep "^alias apiv=" ~/.bash*)" ] || echo 'alias apiv="curl http://$ip:8000/api/version"' >>${SHELL_CONFIG_FILE}
+    [ "$(grep "^alias kubectl=" ~/.bash*)" ] || echo "alias kubectl='microk8s.kubectl'" >>"${SHELL_CONFIG_FILE}"
+    [ "$(grep "^alias helm=" ~/.bash*)" ] || echo "alias helm='microk8s.helm3'" >>"${SHELL_CONFIG_FILE}"
+    [ "$(grep "^alias k=" ~/.bash*)" ] || echo 'alias k="kubectl --namespace my-namespace"' >>"${SHELL_CONFIG_FILE}"   
+    [ "$(grep "^alias h=" ~/.bash*)" ] || echo 'alias h="helm --namespace my-namespace"' >>"${SHELL_CONFIG_FILE}"
+    [ "$(grep "^ip=" ~/.bash*)" ] || echo "ip=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
+    [ "$(grep "^alias apiv=" ~/.bash*)" ] || echo 'alias apiv="curl http://$ip:8000/api/version"' >>"${SHELL_CONFIG_FILE}"
     seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n "k="kubectl --namespace my-namespace"" \n \n "h="helm --namespace my-namespace"" \n \n "apiv="curl http://${EXTERNAL_IP}:8000/api/version"" \n "
 }
 
@@ -143,17 +143,17 @@ install_docker() {
 
 install_microk8s() {
   app_installed microk8s && seperator echo_success "microk8s has already been installed" ||
-  ( sudo snap install microk8s --classic >${REDIRECT} &&
+  ( sudo snap install microk8s --classic >"${REDIRECT}" &&
     seperator echo_success "microk8s has been installed" || seperator echo_bold "microk8s install failed" &&
-    sudo usermod -a -G microk8s $USER
-    sudo chown -f -R $USER ~/.kube
-    sudo su - $USER &
+    sudo usermod -a -G microk8s "$USER"
+    sudo chown -f -R "$USER" ~/.kube
+    sudo su - "$USER" &
     seperator echo_success "re-entered the session for the group update" || seperator echo_bold "re-enter failed" &&
     microk8s status --wait-ready &&
     seperator echo_success "microk8s ready" || seperator echo_bold "microk8s not ready" &&
-    microk8s enable dns storage helm3 registry dashboard ingress >${REDIRECT} &&
+    microk8s enable dns storage helm3 registry dashboard ingress >"${REDIRECT}" &&
     seperator echo_success "microk8s add-ons ready" || seperator echo_bold "microk8s add-ons not ready" &&
-    cd $HOME/.kube &&
+    cd "$HOME"/.kube &&
     microk8s config >config &&
     seperator echo_success "microk8s configured" || seperator echo_bold "microk8s not configured" )
 }
@@ -166,38 +166,38 @@ namespace_exist () {
 }
 
 create_namespace() {
-  echo Creating namespace $NAME_SPACE....
-  namespace_exist $NAME_SPACE && ( seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" && rebuild_namespace ) ||
-  cd $HOME &&
-    microk8s.kubectl create namespace $NAME_SPACE &&
-    seperator echo_success "microk8s.kubectl namespace $NAME_SPACE has been created" || 
-    seperator echo_bold "microk8s.kubectl namespace $NAME_SPACE failed to be created." && fatal "Rasa X Helm Install Failed"
+  echo Creating namespace "$NAME_SPACE"....
+  namespace_exist "$NAME_SPACE" && ( seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" already exist" && rebuild_namespace ) ||
+  cd "$HOME" &&
+    microk8s.kubectl create namespace "$NAME_SPACE" &&
+    seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" || 
+    seperator echo_bold "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." && fatal "Rasa X Helm Install Failed"
 }
 
 rebuild_namespace() {
-  read -e -p "Would you like to rebuild $NAME_SPACE? [Y/n] " YN
+  read -e -p -r "Would you like to rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-  cd $HOME &&
-    microk8s.kubectl delete namespace $NAME_SPACE &&
-    microk8s.kubectl create namespace $NAME_SPACE &&
+  cd "$HOME" &&
+    microk8s.kubectl delete namespace "$NAME_SPACE" &&
+    microk8s.kubectl create namespace "$NAME_SPACE" &&
     microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
     microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x
 }
 
 deploy_helm() {
-  cd $HOME &&
+  cd "$HOME" &&
     microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
     microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x &&
-    seperator echo_success "microk8s.helm3 --namespace $NAME_SPACE using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace $NAME_SPACE install Failed" &&
-    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace $NAME_SPACE get services && curl http://$EXTERNAL_IP/api/version" &&
-    microk8s.kubectl --namespace $NAME_SPACE get services
+    seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" &&
+    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
+    microk8s.kubectl --namespace "$NAME_SPACE" get services
     # curl http://$EXTERNAL_IP:8000/api/version &&
     seperator echo_bold "Next we will start Octant it will be available at http://$EXTERNAL_IP:8002/#/"
 }
 
 install_octant() {
   app_installed octant && seperator echo_success "octant has already been installed" ||
-  cd $HOME &&
+  cd "$HOME" &&
     mkdir octant &&
     cd octant &&
     wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >${REDIRECT} &&
@@ -247,16 +247,16 @@ provide_login_credentials() {
 }
 
 update_values() {
-  cd $HOME/rasax-helm-master &&
+  cd "$HOME"/rasax-helm-master &&
     # Update the values.yaml file
     sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     mv tmp.yml values.yml &&
-    mv -f values.yml $HOME &&
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the $HOME/values.yml file to find and update other advanced deployment information \n" 
+    mv -f values.yml "$HOME" &&
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" 
 }
 
 start_octant() {
-  read -e -p "Would you like to start octant? [Y/n] " YN
+  read -e -p -r "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
@@ -268,12 +268,12 @@ add_alias &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
-read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
+read -e -p -r "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
 NAME_SPACE=${NAME_SPACE:-my-namespace} 
 echo $NAME_SPACE
 echo export NAME_SPACE=$NAME_SPACE &&
 create_namespace $NAME_SPACE &&
-read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+read -e -p -r "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW &&
 generate_not_yet_specified_passwords &&
 update_values &&
