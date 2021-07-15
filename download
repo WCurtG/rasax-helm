@@ -47,9 +47,9 @@ seperator() {
 # This is the easist way to add the Repo to your VM
 
 download () {
-  sudo apt update >${SUDO_REDIRECT} && sudo apt upgrade -y >${SUDO_REDIRECT} && sudo apt autoremove -y >${SUDO_REDIRECT} &&
+  sudo apt update ${SUDO_REDIRECT} && sudo apt upgrade -y ${SUDO_REDIRECT} && sudo apt autoremove -y ${SUDO_REDIRECT} &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
-  sudo apt install unzip >${SUDO_REDIRECT} &&
+  sudo apt install unzip ${SUDO_REDIRECT} &&
   unzip master.zip >${REDIRECT}
 }
 
