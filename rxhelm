@@ -139,11 +139,11 @@ install_snapd() {
 
 install_docker() {
   app_installed docker && seperator echo_success "docker is already installed skipping.." ||
-  ( echo_bold "Installing docker ..."
+  (echo_bold "Installing docker ..."
   sudo apt-get install docker.io docker-compose -y >${REDIRECT} 
-  cd /etc/docker
+  cd /etc/docker &&
   echo -e "{ \n  \t \"insecure-registries\" : [\"localhost:32000\"] \n}" >daemon.json &&
-    seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal )
+  seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal )
 }
 
 install_microk8s() {
@@ -277,7 +277,7 @@ deploy_helm() {
     microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" || 
     seperator echo_error "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" fatal
-    
+
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services &&
     # curl http://$EXTERNAL_IP:8000/api/version &&
