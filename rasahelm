@@ -181,13 +181,13 @@ rebuild_namespace() {
     microk8s.kubectl delete namespace "$NAME_SPACE" &&
     microk8s.kubectl create namespace "$NAME_SPACE" &&
     microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
-    microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x
+    microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x
 }
 
 deploy_helm() {
   cd "$HOME" &&
     microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT} &&
-    microk8s.helm3 --namespace $NAME_SPACE install --values values.yml my-release rasa-x/rasa-x &&
+    microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x &&
     seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" || seperator echo_bold "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" &&
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services
