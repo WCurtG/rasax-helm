@@ -3,7 +3,7 @@
 
 The easy way to set up Rasa X on your Ubuntu 20.04 VM server with Kubernetes management tools included.
 
-[![GitHub Super-Linter](https://github.com/WCurtG/rasax-helm/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
+<!-- [![GitHub Super-Linter](https://github.com/WCurtG/rasax-helm/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter) -->
 
 ## Download & Inspect
 
