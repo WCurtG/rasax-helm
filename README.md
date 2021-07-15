@@ -31,22 +31,10 @@ Upgrade your realse by running in a new shell
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/upgrade | sudo bash
 ```
 
-Rebuild your namespce with the current values.yml
-
-```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/rebuild | sudo bash
-```
-
 ## Kubernetes Management
 
 Start Octant
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant | sudo bash
-```
-
-Install lens at ~/lens and start on your VM
-
-```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/lens | sudo bash
 ```
