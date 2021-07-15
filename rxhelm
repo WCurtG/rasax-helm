@@ -26,16 +26,18 @@ DOWNLOADER=
 # Environment variables that can be set by the user before running the script (e.g. export VAR_TO_SET="var-value")
 DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
 ENABLE_DUCKLING=${ENABLE_DUCKLING}
+RASA_LOCATION=$PWD
+NAME_SPACE=${NAME_SPACE}
 
 # Passwords and Tokens that will be updated on the values.yaml file
 PASSWORD_SALT=${PASSWORD_SALT}
 RASA_X_TOKEN=${RASA_X_TOKEN}
+INITIAL_USERNAME=${INITIAL_USERNAME}
 INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD}
 RASA_TOKEN=${RASA_TOKEN}
 RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
-NAME_SPACE=${NAME_SPACE}
 
 # Installer debug vars
 if $INSTALLER_DEBUG_MODE; then
@@ -64,12 +66,20 @@ fatal() {
 }
 
 seperator() {
+  echo -e "\n\n\n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
   printf "\n \n \t \t \t $($1 "$2") \n \n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  echo -e "\n\n\n"
   # use fatal to stop the script
   $3
 }
+
+line_break() {
+  yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  echo -e "\n\n\n"
+}
+    
 
 run_loading_animation() {
   i=1
@@ -182,6 +192,7 @@ namespace_exist () {
 }
 
 namespace_question () {
+  line_break
   read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
   NAME_SPACE=${NAME_SPACE:-my-namespace} 
   create_namespace
@@ -196,6 +207,7 @@ create_namespace() {
 }
 
 rebuild_namespace() {
+  line_break
   read -e -p "Would you like to rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   ( cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" ) ||
@@ -208,8 +220,12 @@ upgrade_namespace() {
 }
 
 password_question() {
-  read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
-  [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW
+  line_break
+  read -e -p "Please set your Rasa X username or leave blank for default. [me] " INITIAL_USERNAME
+  INITIAL_USERNAME=${INITIAL_USERNAME:-me } 
+  line_break
+  read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " INITIAL_USER_PASSWORD
+  INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD:- } 
   generate_not_yet_specified_passwords
 }
 
@@ -236,12 +252,12 @@ get_specified_password_or_generate() {
 }
 
 update_values() {
-  cd "$PWD"/rasax-helm &&
+  cd $RASA_LOCATION &&
     # Update the values.yaml file
-    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     mv tmp.yml values.yml &&
     mv -f values.yml "$HOME" &&
-    ( seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n EXTERNAL_IP : ${EXTERNAL_IP} \n \n INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" ) &&
+    ( seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" )  &&
     deploy_helm
 }
 
@@ -263,7 +279,7 @@ provide_login_credentials() {
 
   # Determine the public IP address
   PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
-  LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=me&password=${INITIAL_USER_PASSWORD}"
+  LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
 
   # Check if the URL is available over the public IP address
   STATUSCODE=$(curl --silent --connect-timeout 10 --output /dev/null --write-out "%{http_code}" "${LOGIN_URL}" || true)
@@ -271,13 +287,15 @@ provide_login_credentials() {
     # Determine the local IP address associated with a default gateway
     LOCAL_IP_ADDRESS=$(ip r g 8.8.8.8 | head -1 | awk '{print $7}')
     # Return the URL with the local IP address if the login webside is not available over the public address
-    LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=me&password=${INITIAL_USER_PASSWORD}"
+    LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
   fi
-
+  line_break
   echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+  line_break
 }
 
 start_octant() {
+  line_break
   read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
