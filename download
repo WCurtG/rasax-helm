@@ -74,4 +74,3 @@ clean_up () {
 
 download &&
 seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master"
-cd $HOME/rasax-helm-master
