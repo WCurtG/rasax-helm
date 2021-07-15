@@ -26,9 +26,9 @@ seperator() {
 start_octant() {
   read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-    OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser & 
-    seperator echo_success "Octant has started. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/"
+    ( seperator echo_success "Octant is starting. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/" &&
+    OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser )||
+    echo_bold ( fatal "Octant failed to start." )
 }
 
-start_octant && 
-seperator echo_success "Octant has been started."
+start_octant
