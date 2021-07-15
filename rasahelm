@@ -175,7 +175,7 @@ create_namespace() {
 }
 
 rebuild_namespace() {
-  read -e -p -r "Would you like to rebuild "$NAME_SPACE"? [Y/n] " YN
+  read -e -p "Would you like to rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   cd "$HOME" &&
     microk8s.kubectl delete namespace "$NAME_SPACE" &&
@@ -256,7 +256,7 @@ update_values() {
 }
 
 start_octant() {
-  read -e -p -r "Would you like to start octant? [Y/n] " YN
+  read -e -p "Would you like to start octant? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
@@ -268,12 +268,12 @@ add_alias &&
 install_snapd &&
 install_docker &&
 install_microk8s &&
-read -e -p -r "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
+read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
 NAME_SPACE=${NAME_SPACE:-my-namespace} 
 echo $NAME_SPACE
 echo export NAME_SPACE=$NAME_SPACE &&
 create_namespace &&
-read -e -p -r "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
+read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW &&
 generate_not_yet_specified_passwords &&
 update_values &&
