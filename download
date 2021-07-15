@@ -20,7 +20,6 @@ INSTALLER_DEBUG_MODE=$(boolean "${INSTALLER_DEBUG_MODE:-false}")
 if $INSTALLER_DEBUG_MODE; then
   set +x
   REDIRECT=/dev/stdout
-  SUDO_REDIRECT='| sudo tee file'
 else
   REDIRECT=/dev/null
 fi
@@ -56,9 +55,9 @@ seperator() {
 # This is the easist way to add the Repo to your VM
 
 download () {
-  sudo apt update ${SUDO_REDIRECT} && sudo apt upgrade -y ${SUDO_REDIRECT} && sudo apt autoremove -y ${SUDO_REDIRECT} &&
+  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
-  sudo apt install unzip ${SUDO_REDIRECT} &&
+  sudo apt install unzip &&
   unzip master.zip >${REDIRECT} && 
   mv rasax-helm-master rasax-helm && 
   clean_up
