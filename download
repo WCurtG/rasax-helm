@@ -40,7 +40,7 @@ fatal() {
 
 seperator() {
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
-  echo "\n \n $($1 "$2") \n \n"
+  printf "\n \n $($1 "$2") \n \n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
 }
 
