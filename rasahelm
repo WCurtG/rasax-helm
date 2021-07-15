@@ -13,7 +13,7 @@ boolean() {
   esac
 }
 
-# Get the VM external IP address
+# Get the external IP address for VM
 EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
 
 # The script can either use `wget` or `curl` to pull other scripts
