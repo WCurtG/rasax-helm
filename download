@@ -44,9 +44,11 @@ fatal() {
 }
 
 seperator() {
+  echo -e "\n\n\n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
-  printf "\n \n \t \t \t $($1 "$2") \n \n"
+  printf "\n \n $($1 "$2") \n \n"
   yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+  echo -e "\n\n\n"
   # use fatal to stop the script
   $3
 }
@@ -57,7 +59,8 @@ download () {
   sudo apt update ${SUDO_REDIRECT} && sudo apt upgrade -y ${SUDO_REDIRECT} && sudo apt autoremove -y ${SUDO_REDIRECT} &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
   sudo apt install unzip ${SUDO_REDIRECT} &&
-  unzip master.zip >${REDIRECT}
+  unzip master.zip >${REDIRECT} && 
+  mv rasax-helm-master rasax-helm && 
   clean_up
 }
 
