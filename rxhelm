@@ -206,8 +206,8 @@ create_namespace() {
   ( ( echo_success Creating namespace "$NAME_SPACE".... &&
       cd "$HOME" && 
       microk8s.kubectl create namespace "$NAME_SPACE" &&
-      seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" && 
-      password_question & return 0 ) || 
+      seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ) && 
+      password_question || 
         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal ) 
 }
 
@@ -217,8 +217,8 @@ rebuild_namespace() {
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   ( ( cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
         microk8s.kubectl create namespace "$NAME_SPACE" &&
-        seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" && 
-        password_question ) || 
+        seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ) && 
+        password_question || 
           seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal ) || upgrade_namespace
 }
 
@@ -226,9 +226,9 @@ upgrade_namespace() {
   line_break &&
   read -e -p "Would you like to upgrade "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-  ( cd "$HOME" && 
-    microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x &&
-    return 0 ) || seperator echo_error "namespace $NAME_SPACE has not been upgraded. Exiting.." fatal 
+  cd "$HOME" && 
+    microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x ||
+    seperator echo_error "namespace $NAME_SPACE has not been upgraded. Exiting.." fatal 
 }
 
 password_question() {
