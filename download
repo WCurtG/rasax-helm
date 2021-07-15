@@ -65,7 +65,7 @@ download () {
 }
 
 clean_up () {
-  find $HOME -type f -iname "master.zip" -mmin -2 -delete &&
+  find $PWD -type f -iname "master.zip" -mmin -2 -delete &&
   echo -e "\n\n\n"
   echo_success "Cleaning up your download...."
   echo -e "\n\n\n"
