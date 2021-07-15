@@ -98,9 +98,9 @@ check_if_can_be_installed() {
 
 shell_config_file() {
  if [[ "${SHELL}" =~ zsh ]]; then
-  SHELL_CONFIG_FILE=""$HOME"/.zshrc"
+  SHELL_CONFIG_FILE="${HOME}/.zshrc"
  elif [[ "${SHELL}" =~ bash ]]; then
-  SHELL_CONFIG_FILE=""$HOME"/.bashrc"
+  SHELL_CONFIG_FILE="${HOME}/.bashrc"
  fi
 }
 
