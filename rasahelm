@@ -272,7 +272,7 @@ read -e -p -r "Please provide a name for you microk8s deployment: default [my-na
 NAME_SPACE=${NAME_SPACE:-my-namespace} 
 echo $NAME_SPACE
 echo export NAME_SPACE=$NAME_SPACE &&
-create_namespace $NAME_SPACE &&
+create_namespace &&
 read -e -p -r "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " PW
 [[ $PW != "" ]] && INITIAL_USER_PASSWORD=$PW &&
 generate_not_yet_specified_passwords &&
