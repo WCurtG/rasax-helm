@@ -187,9 +187,9 @@ install_octant() {
 }
 
 install_requirements() {
-  sudo apt update && 
-  sudo apt upgrade && 
-  sudo apt autoremove &&  
+#   sudo apt update && 
+#   sudo apt upgrade && 
+#   sudo apt autoremove &&  
   install_snapd &&
   install_docker &&
   install_microk8s &&
