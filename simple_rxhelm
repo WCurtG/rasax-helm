@@ -207,9 +207,9 @@ namespace_question () {
   seperator echo_success "** Current pods in all namespaces **" &&
   microk8s.kubectl get pods --all-namespaces &&
   line_break &&
+  
   read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
-  NAME_SPACE=${NAME_SPACE:-my-namespace} &&
-  create_namespace
+  NAME_SPACE=${NAME_SPACE:-my-namespace} && create_namespace
 }
 
 create_namespace() {
@@ -253,9 +253,9 @@ password_question() {
   read -e -p "Please set your Rasa X username or leave blank for default. [me] " INITIAL_USERNAME
   INITIAL_USERNAME=${INITIAL_USERNAME:-me} &&
   line_break &&
+  
   read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " INITIAL_USER_PASSWORD
-  [[ $INITIAL_USER_PASSWORD != "" ]] && INITIAL_USER_PASSWORD=$INITIAL_USER_PASSWORD 
-  generate_not_yet_specified_passwords
+  [[ $INITIAL_USER_PASSWORD != "" ]] && INITIAL_USER_PASSWORD=$INITIAL_USER_PASSWORD && generate_not_yet_specified_passwords
 }
 
 # This will be run when the user is propmted to create a password or let the system create one.
@@ -287,16 +287,15 @@ update_values() {
     sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     mv -f tmp.yml values.yml &&
     [[$RASA_LOCATION != $HOME]]] || mv -f values.yml "$HOME" 
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" &&
-    clean_up
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" && clean_up
 }
 
 clean_up () {
   find $RASA_LOCATION -type f -iname "tmp.yml" -mmin -2 -delete &&
-  echo -e "\n\n\n"
-  echo_success "Cleaning up your download...."
-  echo -e "\n\n\n"
-  sleep 3
+  echo -e "\n\n\n" &&
+  echo_success "Cleaning up your download...." &&
+  echo -e "\n\n\n" &&
+  sleep 3 &&
   deploy_helm
 }
 
@@ -310,8 +309,7 @@ deploy_helm() {
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services &&
     # curl http://$EXTERNAL_IP:8000/api/version &&
-    seperator echo_bold "Next we will start Octant it will be available at \n http://$EXTERNAL_IP:8002/#/overview/namespace/$NAME_SPACE" &&
-    provide_login_credentials
+    seperator echo_bold "Next we will start Octant it will be available at \n http://$EXTERNAL_IP:8002/#/overview/namespace/$NAME_SPACE" && provide_login_credentials
 }
 
 provide_login_credentials() {
@@ -331,10 +329,10 @@ provide_login_credentials() {
     LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
   fi
   
-  line_break 
-  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
-  line_break
-  add_alias
+  line_break &&
+  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" &&
+  line_break &&
+  add_alias &&
 }
 
 add_alias() {
@@ -346,8 +344,7 @@ add_alias() {
     [ "$(grep "^alias h=" ~/.bash*)" ] || echo "alias h=\"helm --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
     [ "$(grep "^VM_IP=" ~/.bash*)" ] || echo "VM_IP=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo "alias api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"" >>"${SHELL_CONFIG_FILE}"
-    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n k=\"kubectl --namespace ${NAME_SPACE}\" \n \n h=\"helm --namespace ${NAME_SPACE}\" \n \n api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\" \n " &&
-    start_octant
+    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n k=\"kubectl --namespace ${NAME_SPACE}\" \n \n h=\"helm --namespace ${NAME_SPACE}\" \n \n api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\" \n " && start_octant
 }
 
 start_octant() {
