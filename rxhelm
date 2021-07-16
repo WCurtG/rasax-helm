@@ -118,6 +118,7 @@ check_if_can_be_installed() {
   [[ $OS == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
 
   verify_downloader cur || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
+  install_requirements || fatal 'Cannot install required packages'
 }
 
 shell_config_file() {
@@ -328,7 +329,7 @@ provide_login_credentials() {
 
 add_alias() {
     shell_config_file &&
-    [ "$(grep "^NAME_SPACE=" ~/.bash*)" ] || echo "NAME_SPACE=${NAME_SPACE}" >>"${SHELL_CONFIG_FILE}"
+    # [ "$(grep "^NAME_SPACE=" ~/.bash*)" ] || echo "NAME_SPACE=${NAME_SPACE}" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias kubectl=" ~/.bash*)" ] || echo "alias kubectl='microk8s.kubectl'" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias helm=" ~/.bash*)" ] || echo "alias helm='microk8s.helm3'" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias k=" ~/.bash*)" ] || echo "alias k=\"kubectl --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
