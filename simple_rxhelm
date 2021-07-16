@@ -328,10 +328,9 @@ provide_login_credentials() {
     # Return the URL with the local IP address if the login webside is not available over the public address
     LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
   fi
-  
-  line_break 
+  echo -e "\n\n\n" &&
   echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" 
-  line_break 
+  echo -e "\n\n\n" &&
   add_alias 
 }
 
