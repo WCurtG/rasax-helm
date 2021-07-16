@@ -23,11 +23,11 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
     cd rasax-helm && ./rxhelm
 ```
 
-Simple install without addind the repo to your Ubuntu 20.04 VM. To upgrade or rebuild your namespace deployment rerun the script again and follow the prompts.
+<!-- Simple install without addind the repo to your Ubuntu 20.04 VM. To upgrade or rebuild your namespace deployment rerun the script again and follow the prompts.
 
 ```bash
     curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/simple_rxhelm | sudo bash
-```
+``` -->
 
 ## Upgrading or Rebuilding your deployment
 
