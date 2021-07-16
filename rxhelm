@@ -117,7 +117,7 @@ check_if_can_be_installed() {
   echo $OS
   [[ $OS == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
 
-  verify_downloader cur || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
+  verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
   install_requirements || fatal 'Cannot install required packages'
 }
 
