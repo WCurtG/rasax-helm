@@ -208,7 +208,6 @@ create_namespace() {
     eperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal
     password_question
   }
-  
 }
 
 rebuild_namespace() {
