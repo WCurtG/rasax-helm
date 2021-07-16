@@ -289,7 +289,16 @@ update_values() {
     mv tmp.yml values.yml &&
     mv -f values.yml "$HOME" &&
     seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" &&
-    deploy_helm
+    clean_up
+}
+
+clean_up () {
+  find $PWD -type f -iname "temp_values.yml" -mmin -2 -delete &&
+  echo -e "\n\n\n"
+  echo_success "Cleaning up your download...."
+  echo -e "\n\n\n"
+  sleep 3
+  deploy_helm
 }
 
 deploy_helm() {
