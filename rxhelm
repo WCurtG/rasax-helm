@@ -93,17 +93,31 @@ run_loading_animation() {
   done
 }
 
+download() {
+  # [ $# -eq 1 ] || fatal 'download needs exactly 1 argument'
+  url=$1
+
+  [[ ${DOWNLOADER} == curl ]] && curl -sO "$1" || wget -q "$1" -O "${url##*/}" || fatal 'Download failed'
+}
+
 does_command_exist() {
-  command -v "$1" >/dev/null
+  command -v "$1" > /dev/null
+}
+
+verify_downloader() {
+    # Return failure if it doesn't exist or is no executable
+    does_command_exist "$1" || return 1
+
+    # Set verified executable as our downloader program and return success
+    DOWNLOADER=$1
 }
 
 check_if_can_be_installed() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
-  if [[ $OS != "linux" ]]; then
-    fatal "Running this script is only supported on Linux systems."
-  fi
+  echo $OS
+  [[ $OS == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
 
-  install_requirements
+  verify_downloader cur || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
 }
 
 shell_config_file() {
