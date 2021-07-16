@@ -188,8 +188,8 @@ install_octant() {
 
 install_requirements() {
   sudo apt update && 
-  sudo apt upgrade -y && 
-  sudo apt autoremove -y &&  
+  sudo apt upgrade && 
+  sudo apt autoremove &&  
   install_snapd &&
   install_docker &&
   install_microk8s &&
@@ -285,7 +285,7 @@ get_specified_password_or_generate() {
 
 update_values() {
   cd "$RASA_LOCATION" &&
-  download https://raw.githubusercontent.com/WCurtG/rasax-helm/master/temp_values.yml &&
+  wget https://raw.githubusercontent.com/WCurtG/rasax-helm/master/temp_values.yml &&
     # Update the values.yaml file
     sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     mv -f tmp.yml values.yml &&
