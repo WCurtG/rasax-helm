@@ -314,7 +314,7 @@ deploy_helm() {
 
 provide_login_credentials() {
   # Explain how to access Rasa X
-  echo -e "The deployment is ready 🤖. " ;
+  echo -e "The deployment is ready 🤖. " 
 
   # Determine the public IP address
   PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
@@ -329,9 +329,9 @@ provide_login_credentials() {
     LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
   fi
   
-  line_break ;
-  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" ;
-  line_break ;
+  line_break 
+  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" 
+  line_break 
   add_alias 
 }
 
