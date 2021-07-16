@@ -236,8 +236,7 @@ rebuild_namespace() {
         seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." 
         password_question
-  } ||
-  upgrade_namespace
+  } || upgrade_namespace
 }
 
 upgrade_namespace() {
