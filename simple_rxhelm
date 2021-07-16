@@ -118,7 +118,7 @@ check_if_can_be_installed() {
   [[ $OS == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
 
   verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
-  install_requirements # || fatal 'Cannot install required packages'
+  install_requirements || fatal 'Cannot install required packages'
 }
 
 shell_config_file() {
@@ -180,14 +180,16 @@ install_octant() {
     cd "$HOME" &&
     mkdir -p octant &&
     cd octant &&
-    wget https://github.com/vmware-tanzu/octant/releases/download/v0.22.0/octant_0.22.0_Linux-64bit.deb &&
-    sudo dpkg -i octant_0.22.0_Linux-64bit.deb &&
+    wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
+    sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
     seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
   }
 }
 
 install_requirements() {
-  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&  
+  sudo apt update && 
+  sudo apt upgrade -y && 
+  sudo apt autoremove -y &&  
   install_snapd &&
   install_docker &&
   install_microk8s &&
@@ -200,16 +202,16 @@ namespace_exist () {
   # Return failure if it doesn't exist or is no executable
   microk8s.kubectl get ns "$1" >/dev/null || return 1
 
-    return 0
+  return 0
 }
 
 namespace_question () {
   seperator echo_success "** Current pods in all namespaces **" &&
   microk8s.kubectl get pods --all-namespaces &&
   line_break &&
-  
   read -e -p "Please provide a name for you microk8s deployment: default [my-namespace] " NAME_SPACE
-  NAME_SPACE=${NAME_SPACE:-my-namespace} && create_namespace
+  NAME_SPACE=${NAME_SPACE:-my-namespace} &&
+  create_namespace
 }
 
 create_namespace() {
@@ -236,7 +238,8 @@ rebuild_namespace() {
         seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." 
         password_question
-  } || upgrade_namespace
+  } ||
+  upgrade_namespace
 }
 
 upgrade_namespace() {
@@ -253,9 +256,9 @@ password_question() {
   read -e -p "Please set your Rasa X username or leave blank for default. [me] " INITIAL_USERNAME
   INITIAL_USERNAME=${INITIAL_USERNAME:-me} &&
   line_break &&
-  
   read -e -p "Please set your unique Rasa X password or leave blank and we will set a secure password for you and add it to your values.yml file in the root. " INITIAL_USER_PASSWORD
-  [[ $INITIAL_USER_PASSWORD != "" ]] && INITIAL_USER_PASSWORD=$INITIAL_USER_PASSWORD && generate_not_yet_specified_passwords
+  [[ $INITIAL_USER_PASSWORD != "" ]] && INITIAL_USER_PASSWORD=$INITIAL_USER_PASSWORD 
+  generate_not_yet_specified_passwords
 }
 
 # This will be run when the user is propmted to create a password or let the system create one.
@@ -281,13 +284,12 @@ get_specified_password_or_generate() {
 }
 
 update_values() {
-  cd $RASA_LOCATION &&
-  download https://raw.githubusercontent.com/WCurtG/rasax-helm/master/temp_values.yml
+  download https://raw.githubusercontent.com/WCurtG/rasax-helm/master/temp_values.yml &&
     # Update the values.yaml file
     sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
     mv -f tmp.yml values.yml &&
     [[$RASA_LOCATION != $HOME]]] || mv -f values.yml "$HOME" 
-    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" && clean_up
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" && update_values
 }
 
 clean_up () {
@@ -296,7 +298,16 @@ clean_up () {
   echo_success "Cleaning up your download...." &&
   echo -e "\n\n\n" &&
   sleep 3 &&
-  deploy_helm
+  update_values
+}
+
+update_values() {
+    # Update the values.yaml file
+    sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml > tmp.yml && 
+    mv tmp.yml values.yml &&
+    mv -f values.yml "$HOME" &&
+    seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" &&
+    deploy_helm
 }
 
 deploy_helm() {
@@ -309,12 +320,13 @@ deploy_helm() {
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services &&
     # curl http://$EXTERNAL_IP:8000/api/version &&
-    seperator echo_bold "Next we will start Octant it will be available at \n http://$EXTERNAL_IP:8002/#/overview/namespace/$NAME_SPACE" && provide_login_credentials
+    seperator echo_bold "Next we will start Octant it will be available at \n http://$EXTERNAL_IP:8002/#/overview/namespace/$NAME_SPACE" &&
+    provide_login_credentials
 }
 
 provide_login_credentials() {
   # Explain how to access Rasa X
-  echo -e "The deployment is ready 🤖. " 
+  echo -e "The deployment is ready 🤖. "
 
   # Determine the public IP address
   PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
@@ -328,10 +340,11 @@ provide_login_credentials() {
     # Return the URL with the local IP address if the login webside is not available over the public address
     LOGIN_URL="http://${LOCAL_IP_ADDRESS}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
   fi
-  echo -e "\n\n\n" &&
-  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" 
-  echo -e "\n\n\n" &&
-  add_alias 
+  
+  line_break 
+  echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
+  line_break
+  add_alias
 }
 
 add_alias() {
@@ -343,7 +356,8 @@ add_alias() {
     [ "$(grep "^alias h=" ~/.bash*)" ] || echo "alias h=\"helm --namespace ${NAME_SPACE}\"" >>"${SHELL_CONFIG_FILE}" 
     [ "$(grep "^VM_IP=" ~/.bash*)" ] || echo "VM_IP=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}"
     [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo "alias api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"" >>"${SHELL_CONFIG_FILE}"
-    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n k=\"kubectl --namespace ${NAME_SPACE}\" \n \n h=\"helm --namespace ${NAME_SPACE}\" \n \n api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\" \n " && start_octant
+    seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n k=\"kubectl --namespace ${NAME_SPACE}\" \n \n h=\"helm --namespace ${NAME_SPACE}\" \n \n api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\" \n " &&
+    start_octant
 }
 
 start_octant() {
