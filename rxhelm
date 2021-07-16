@@ -112,7 +112,7 @@ check_if_can_be_installed() {
     fatal "Running this script is only supported on Linux systems."
   fi
 
-  [[ verify_downloader curl || verify_downloader wget || seperator echo_error 'Cannot find curl or wget for downloading files' ]] && 
+  [[ verify_downloader curl || verify_downloader wget || seperator echo_error 'Cannot find curl or wget for downloading files' ]] 
   install_requirements
 }
 
