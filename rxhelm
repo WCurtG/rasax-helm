@@ -132,45 +132,53 @@ app_installed () {
 }
 
 install_snapd() {
-  app_installed snap && seperator echo_success "snapd is already installed skipping.." || 
-  ( sudo apt-get install snapd -y >${REDIRECT} &&
-  seperator echo_success "snapd has been installed" || seperator echo_error "snapd install failed" fatal )
+  app_installed snap && seperator echo_success "snapd is already installed skipping.." ||
+  {
+    sudo apt-get install snapd -y >${REDIRECT} &&
+    seperator echo_success "snapd has been installed" || seperator echo_error "snapd install failed" fatal
+  }
 }
 
 install_docker() {
   app_installed docker && seperator echo_success "docker is already installed skipping.." ||
-  (echo_bold "Installing docker ..."
-  sudo apt-get install docker.io docker-compose -y >${REDIRECT} 
-  cd /etc/docker &&
-  echo -e "{ \n  \t \"insecure-registries\" : [\"localhost:32000\"] \n}" >daemon.json &&
-  seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal )
+  {
+    echo_bold "Installing docker ..."
+    sudo apt-get install docker.io docker-compose -y >${REDIRECT} 
+    cd /etc/docker &&
+    echo -e "{ \n  \t \"insecure-registries\" : [\"localhost:32000\"] \n}" >daemon.json &&
+    seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal
+  }
 }
 
 install_microk8s() {
   app_installed microk8s && seperator echo_success "microk8s is already installed skipping.." ||
-  ( sudo snap install microk8s --classic >"${REDIRECT}" &&
-    seperator echo_success "microk8s has been installed" || seperator echo_error "microk8s install failed" fatal &&
+  {
+    sudo snap install microk8s --classic >"${REDIRECT}" &&
+    seperator echo_success "microk8s has been installed" || seperator echo_error "microk8s install failed" fatal 
     sudo usermod -a -G microk8s "$USER"
     sudo chown -f -R "$USER" ~/.kube
     sudo su - "$USER" &
-    seperator echo_success "re-entered the session for the group update" || seperator echo_error "re-enter failed" fatal &&
+    seperator echo_success "re-entered the session for the group update" || seperator echo_error "re-enter failed" fatal 
     microk8s status --wait-ready &&
-    seperator echo_success "microk8s ready" || seperator echo_error "microk8s update status to ready has failed" fatal &&
+    seperator echo_success "microk8s ready" || seperator echo_error "microk8s update status to ready has failed" fatal
     microk8s enable dns storage helm3 registry dashboard ingress >"${REDIRECT}" &&
-    seperator echo_success "microk8s add-ons ready" || seperator echo_error "microk8s add-ons set up has failed" fatal &&
+    seperator echo_success "microk8s add-ons ready" || seperator echo_error "microk8s add-ons set up has failed" fatal
     cd "$HOME"/.kube &&
     microk8s config >config &&
-    seperator echo_success "microk8s configured" || seperator echo_error "microk8s not configured" fatal )
+    seperator echo_success "microk8s configured" || seperator echo_error "microk8s not configured" fatal 
+  }
 }
 
 install_octant() {
   app_installed octant && seperator echo_success "octant is already installed skipping.." ||
-  ( cd "$HOME" &&
+  {
+    cd "$HOME" &&
     mkdir octant &&
     cd octant &&
     wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
     sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
-    seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal )
+    seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
+  }
 }
 
 install_requirements() {
@@ -200,27 +208,30 @@ namespace_question () {
 
 create_namespace() {
   namespace_exist "$NAME_SPACE" && 
-  seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" already exist" && 
+  seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" && 
   rebuild_namespace ||
+  {
+    echo_success Creating namespace $NAME_SPACE.... 
+    cd "$HOME" && 
+    microk8s.kubectl create namespace "$NAME_SPACE" &&
+    seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" || 
+    eperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal
+    password_question
+  }
   
-   ( echo_success Creating namespace "$NAME_SPACE".... &&
-      cd "$HOME" && 
-      microk8s.kubectl create namespace "$NAME_SPACE" &&
-      seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ) && 
-      password_question || 
-        seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal
 }
 
 rebuild_namespace() {
   line_break &&
   read -e -p "Would you like to delete and rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-   ( cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
+  {
+    "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
         microk8s.kubectl create namespace "$NAME_SPACE" &&
         seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created"  ||
-        seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." ) &&
-        password_question || 
-        upgrade_namespace
+        seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." 
+  } ||
+  upgrade_namespace
 }
 
 upgrade_namespace() {
