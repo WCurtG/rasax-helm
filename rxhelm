@@ -216,7 +216,7 @@ rebuild_namespace() {
   read -e -p "Would you like to delete and rebuild "$NAME_SPACE"? [Y/n] " YN
   [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
   {
-    "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
+    cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
         microk8s.kubectl create namespace "$NAME_SPACE" &&
         seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created"  ||
         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." 
