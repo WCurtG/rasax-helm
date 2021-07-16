@@ -332,7 +332,7 @@ provide_login_credentials() {
   line_break &&
   echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}" &&
   line_break &&
-  add_alias &&
+  add_alias 
 }
 
 add_alias() {
