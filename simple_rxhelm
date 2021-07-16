@@ -181,7 +181,7 @@ install_octant() {
     mkdir -p octant &&
     cd octant &&
     download https://github.com/vmware-tanzu/octant/releases/download/v0.22.0/octant_0.22.0_Linux-64bit.deb &&
-    sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
+    sudo dpkg -i octant_0.22.0_Linux-64bit.deb &&
     seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
   }
 }
