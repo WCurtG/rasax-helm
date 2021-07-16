@@ -217,9 +217,9 @@ rebuild_namespace() {
   {
     cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
         microk8s.kubectl create namespace "$NAME_SPACE" &&
-        seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" &&
-        password_question ||
+        seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." 
+        password_question
   } ||
   upgrade_namespace
 }
