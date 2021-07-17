@@ -57,7 +57,7 @@ seperator() {
 
 
 download () {
-  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y &&
+  sudo apt update -q && sudo apt upgrade -qy && sudo apt autoremove -qy &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
   sudo apt-get install unzip -y &&
   unzip master.zip >${REDIRECT} && 

@@ -211,7 +211,7 @@ rasa:
       nodeSelector: {}
         # "beta.kubernetes.io/instance-type": "g3.8xlarge"
       # replicaCount of the Rasa Production container
-      replicaCount: 1
+      replicaCount: 2
       # serviceName with which the Rasa production deployment is exposed to other containers
       serviceName: "rasa-production"
       # service specifies settings for exposing rasa production to other services
