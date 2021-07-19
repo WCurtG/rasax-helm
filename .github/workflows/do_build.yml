@@ -29,7 +29,7 @@ jobs:
               ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
         - name: Install Rasa Helm
           run: |
-            curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash &&
+            curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/simple_rxhelm | sudo bash &&
             cd rasax-helm && ./rxhelm
             
                 
