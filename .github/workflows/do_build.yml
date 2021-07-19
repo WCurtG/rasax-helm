@@ -15,22 +15,16 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  ssh-do:
-    # The type of runner that the job will run on
+  build:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2
-        - uses: webfactory/ssh-agent@v0.5.3
-          with:
-              ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        - name: Install Rasa Helm
-          run: |
-            curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/simple_rxhelm | sudo bash &&
-            cd rasax-helm && ./rxhelm
-            
-                
+      - name: ls -a via OPEN SSH Private Key
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: ls -a
+          host: ${{ secrets.HOST }}
+          username: root
+#           password: ${{ secrets.PASSPHRASE }}
+          privateKey: ${{ secrets.SSH_PRIVATE_KEY}}
               
