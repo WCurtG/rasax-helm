@@ -25,8 +25,8 @@ jobs:
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-    - name: Log in to DigitalOcean Container Registry with short-lived credentials
-      run: doctl registry login --expiry-seconds 600
+    - name: ssh in to DO droplet
+      run: doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }}
 
     - name: Run test command 
       run: echo "this is a test"  
