@@ -19,12 +19,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ls -a via ssh
-        uses: garygrossgarten/github-action-ssh@release
-        with:
-          command: ls -a
-          host: ${{ secrets.HOST }}
-          username: root
-          # passphrase: ${{ secrets.PASSPHRASE }}
-          privateKey: ${{ secrets.PRIVATE_KEY}}
+      - name: Deploy to Staging server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          # ARGS: "-rltgoDzvO"
+          # SOURCE: "dist/"
+          REMOTE_HOST: ${{ secrets.HOST }}
+          REMOTE_USER: root
+          # TARGET: "/root"
 
