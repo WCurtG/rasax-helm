@@ -19,13 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: ls -a via ssh
+        uses: garygrossgarten/github-action-ssh@release
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-      - name: SSH into project
-        run: |
-            doctl compute ssh rasa
-      - name: Run echo command on DO 
-        run: |
-            echo "this is being run by GH action"
+          command: ls -a
+          host: ${{ secrets.HOST }}
+          username: root
+          # passphrase: ${{ secrets.PASSPHRASE }}
+          privateKey: ${{ secrets.PRIVATE_KEY}}
+
