@@ -14,6 +14,11 @@ on:
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
+  SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
+  SIZE: 8gb
+
 jobs:
   build:
     name: Set-up  
@@ -30,10 +35,69 @@ jobs:
 
     - name: Destroy DIGITALOCEAN_DROPLET 
       run: |
-        cd $GITHUB_WORKSPACE/do_droplet_config && 
-        ./droplet_destroy.sh
+        echo "- Destroying the droplet"
+        # delete the droplets
+        doctl compute droplet delete -f "${DROPLET}"
       
+    - name: Get fastest DigitalOcean datacenter
+      run: |
+            better_ping=99999
+            better_datacenter=''
+            better_datacenter_name=''
+            max_ping=${1:-1}
+
+            datacenters="speedtest-lon1.digitalocean.com
+            			speedtest-sfo1.digitalocean.com
+            			speedtest-sfo2.digitalocean.com
+            			speedtest-sfo3.digitalocean.com
+            			speedtest-ams2.digitalocean.com
+            			speedtest-ams3.digitalocean.com
+            			speedtest-nyc1.digitalocean.com
+            			speedtest-nyc2.digitalocean.com
+            			speedtest-nyc3.digitalocean.com
+            			speedtest-sgp1.digitalocean.com
+            			speedtest-fra1.digitalocean.com
+            			speedtest-tor1.digitalocean.com
+            			speedtest-blr1.digitalocean.com"
+
+            while read -r line; do
+            	ping_avg=$(ping -c $max_ping $line | tail -n1 | cut -d'=' -f2 | cut -d'/' -f2)
+            	if [ -z "$ping_avg" ]; then
+            		echo "Ping ${bold}${line}${normal}: not available"
+            		continue
+            	fi
+            	echo "Ping ${bold}${line}${normal}: $ping_avg ms"
+            	if [ $(echo "$ping_avg < $better_ping" | bc) -eq 1 ]; then
+            		better_ping=$ping_avg
+            		better_datacenter=$line
+            		better_datacenter_name=$(echo $line | cut -d'.' -f1 | cut -d'-' -f2)
+            	fi
+            done <<<"$datacenters"
+
+            echo "Best datacenter: $better_datacenter_name ($better_datacenter)"
+            REGION=${better_datacenter_name}
+
+    - name: Get a DigitalOcean SSH key
+      run: |
+            SSH_ID=$(doctl compute ssh-key list | grep -i "${SSH_KEY_NAME}" | cut -d' ' -f1)
+            SSH_KEY=$(doctl compute ssh-key get "${SSH_ID}" --format FingerPrint --no-header)
+
     - name: Create DIGITALOCEAN_DROPLET
       run: |
-        $GITHUB_WORKSPACE/do_droplet_config && 
-        ./droplet_create.sh
+            echo "- Creating the droplet"
+            doctl compute droplet create "${DROPLET}" \
+                --region "${REGION}" \
+                --image ubuntu-20-10-x64 \
+                --size "${SIZE}" \
+                --ssh-keys "${SSH_KEY}" \
+                --enable-ipv6 \
+                --enable-monitoring \
+                --wait
+            # get the public ip of the node
+            ID=$(doctl compute droplet list | grep "${DROPLET}" | cut -d' ' -f1)
+            PUBLIC_IP=$(doctl compute droplet get "${ID}" --format PublicIPv4 --no-header)
+
+    - name: Download the repo
+      run: |
+            echo "- Downloading the repo"
+            curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash && cd rasax-helm
