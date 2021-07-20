@@ -28,4 +28,6 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST }}
           REMOTE_USER: root
           # TARGET: "/root"
+        run: |
+            echo "Success"
 
