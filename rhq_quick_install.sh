@@ -19,10 +19,13 @@ set -e
 
 boolean() {
   case $1 in
-    true) echo true ;;
-    false) echo false ;;
-    *) echo "Err: Unknown boolean value \"$1\"" 1>&2; exit 1 ;;
-   esac
+  true) echo true ;;
+  false) echo false ;;
+  *)
+    echo "Err: Unknown boolean value \"$1\"" 1>&2
+    exit 1
+    ;;
+  esac
 }
 
 # The kubectl config path
@@ -60,8 +63,7 @@ NGINX_SERVICE_TYPE=${NGINX_SERVICE_TYPE:-LoadBalancer}
 # Additional
 ADDITIONAL_CHANNEL_CREDENTIALS=${ADDITIONAL_CHANNEL_CREDENTIALS}
 
-if $INSTALLER_DEBUG_MODE
-then
+if $INSTALLER_DEBUG_MODE; then
   set +x
   REDIRECT=/dev/stdout
 else
@@ -85,12 +87,10 @@ fatal() {
 run_loading_animation() {
   i=1
   sp="/-\|"
-  while :
-  do
+  while :; do
     sleep 0.1
     # Don't show spinner when we are debugging
-    if ! $INSTALLER_DEBUG_MODE
-    then
+    if ! $INSTALLER_DEBUG_MODE; then
       printf "\b%s" ${sp:i++%${#sp}:1}
     fi
   done
@@ -100,15 +100,15 @@ download() {
   [ $# -eq 1 ] || fatal 'download needs exactly 1 argument'
 
   case ${DOWNLOADER} in
-    curl)
-      curl -sfL "$1"
-      ;;
-    wget)
-      wget -O - -o /dev/null "$1"
-      ;;
-    *)
-      fatal "Incorrect executable '${DOWNLOADER}'"
-      ;;
+  curl)
+    curl -sfL "$1"
+    ;;
+  wget)
+    wget -O - -o /dev/null "$1"
+    ;;
+  *)
+    fatal "Incorrect executable '${DOWNLOADER}'"
+    ;;
   esac
 
   # Abort if download command failed
@@ -116,22 +116,21 @@ download() {
 }
 
 does_command_exist() {
-  command -v "$1" > /dev/null
+  command -v "$1" >/dev/null
 }
 
 verify_downloader() {
-    # Return failure if it doesn't exist or is no executable
-    does_command_exist "$1" || return 1
+  # Return failure if it doesn't exist or is no executable
+  does_command_exist "$1" || return 1
 
-    # Set verified executable as our downloader program and return success
-    DOWNLOADER=$1
-    return 0
+  # Set verified executable as our downloader program and return success
+  DOWNLOADER=$1
+  return 0
 }
 
 check_if_can_be_installed() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
-  if [[ $OS != "linux" ]]
-  then
+  if [[ $OS != "linux" ]]; then
     fatal "Running this script is only supported on Linux systems."
   fi
 
@@ -139,15 +138,13 @@ check_if_can_be_installed() {
 }
 
 install_os_specific_requirements() {
-  if [[ -f /etc/os-release ]]
-  then
+  if [[ -f /etc/os-release ]]; then
     # shellcheck disable=SC1091
     . /etc/os-release
     OS=$NAME
   fi
 
-  if [[ ${OS} == "CentOS Linux" ]] || [[  ${OS} == "Red Hat"* ]]
-  then
+  if [[ ${OS} == "CentOS Linux" ]] || [[ ${OS} == "Red Hat"* ]]; then
     yum check-update -y -q || true
     # Don't fail in case it's already installed
     yum install -y -q policycoreutils-python-utils container-selinux selinux-policy-base || true
@@ -172,13 +169,12 @@ export_k3s_kubeconfig() {
 install_k3s() {
   echo "Installing embedded Kubernetes cluster ..."
 
-  if does_command_exist "setenforce"
-  then
+  if does_command_exist "setenforce"; then
     setenforce 0
   fi
 
   # Install an embedded Kubernetes cluster using K3s
-  download https://get.k3s.io | sh - > ${REDIRECT}
+  download https://get.k3s.io | sh - >${REDIRECT}
 
   # Export the kubeconfig so that `kubectl` can access it later
   export_k3s_kubeconfig
@@ -186,18 +182,17 @@ install_k3s() {
   # Make it readable for no root users since they otherwise can't use `kubectl`
   chmod 744 ${KUBECONFIG}
 
-  kubectl config set-context --current --namespace="${DEPLOYMENT_NAMESPACE}" > ${REDIRECT}
+  kubectl config set-context --current --namespace="${DEPLOYMENT_NAMESPACE}" >${REDIRECT}
 }
 
 install_helm() {
   echo "Installing Helm command line interface  ..."
 
   # Install Helm
-  download https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash > ${REDIRECT}
+  download https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash >${REDIRECT}
 
   # Check if the `helm` command is available
-  if ! does_command_exist "helm"
-  then
+  if ! does_command_exist "helm"; then
     fatal "Something went wrong when trying to install the Helm command line interface.\
  This is required for Rasa X deployment. Please create a question for this in the Rasa\
  Forum (forum.rasa.com) so that we can help you."
@@ -208,22 +203,19 @@ no_root_helm() {
   # We don't run `helm` commands as `root` user because metadata, like added chart repos
   # are else stored in the cache for the `root` user.
   envs="PATH=$PATH:/usr/local/bin"
-  if $IS_EMBEDDED_CLUSTER
-  then
+  if $IS_EMBEDDED_CLUSTER; then
     sudo -u "$SUDO_USER" bash -c "$envs KUBECONFIG=${KUBECONFIG} helm $*"
   else
     sudo -u "$SUDO_USER" bash -c "$envs helm $*"
   fi
 }
 
-
 get_latest_chart_from_repository() {
   # Get and install Rasa X chart
-  if ! no_root_helm repo list &> /dev/null | grep -q "^rasa-x"
-  then
-    no_root_helm repo add rasa-x https://rasahq.github.io/rasa-x-helm > ${REDIRECT}
+  if ! no_root_helm repo list &>/dev/null | grep -q "^rasa-x"; then
+    no_root_helm repo add rasa-x https://rasahq.github.io/rasa-x-helm >${REDIRECT}
   fi
-  no_root_helm repo update > ${REDIRECT}
+  no_root_helm repo update >${REDIRECT}
 }
 
 generate_not_yet_specified_passwords() {
@@ -234,10 +226,9 @@ generate_not_yet_specified_passwords() {
 }
 
 get_specified_password_or_generate() {
-  if [[ -z $1 ]]
-  then
+  if [[ -z $1 ]]; then
     # shellcheck disable=SC2005
-    echo "$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
+    echo "$(tr </dev/urandom -dc 'A-Za-z0-9' | head -c20)"
   else
     echo "$1"
   fi
@@ -248,8 +239,7 @@ is_rasa_x_deployed() {
 }
 
 execute_helm_command() {
-  if [[ $1 == "install" ]]
-  then
+  if [[ $1 == "install" ]]; then
     command=("install")
   else
     command=("upgrade" "--reuse-values")
@@ -261,8 +251,7 @@ execute_helm_command() {
     "--set rasa.tag=${RASA_VERSION}-full"
   )
 
-  if [[ $1 == "install" ]]
-  then
+  if [[ $1 == "install" ]]; then
     command=("${command[@]}"
       "--set rasax.initialUser.password=${INITIAL_USER_PASSWORD}"
       "--set global.postgresql.postgresqlPassword=${POSTGRES_PASSWORD}"
@@ -270,8 +259,7 @@ execute_helm_command() {
       "--set rabbitmq.rabbitmq.password=${REDIS_PASSWORD}")
   fi
 
-  if $IS_EMBEDDED_CLUSTER
-  then
+  if $IS_EMBEDDED_CLUSTER; then
     command=("${command[@]}" "--set nginx.service.type=ClusterIP")
     command=("${command[@]}" "--set ingress.hosts[0].host=,ingress.hosts[0].paths={/}")
   else
@@ -280,39 +268,32 @@ execute_helm_command() {
     command=("${command[@]}" "--set ingress.hosts[0].host=,ingress.hosts[0].paths={/*}")
   fi
 
-  if  [[ $1 == "install" ]] || [[ -n "${DISABLE_TELEMETRY}" ]]
-  then
+  if [[ $1 == "install" ]] || [[ -n "${DISABLE_TELEMETRY}" ]]; then
     command=("${command[@]}" "--set rasax.disableTelemetry=${DISABLE_TELEMETRY:-false}")
   fi
 
-  if  [[ $1 == "install" ]] || [[ -n "${ENABLE_DUCKLING}" ]]
-  then
+  if [[ $1 == "install" ]] || [[ -n "${ENABLE_DUCKLING}" ]]; then
     command=("${command[@]}" "--set duckling.enabled=${ENABLE_DUCKLING:-False}")
   fi
 
-  if  [[ $1 == "install" ]] || [[ -n "${ACTION_SERVER_IMAGE}" ]]
-  then
+  if [[ $1 == "install" ]] || [[ -n "${ACTION_SERVER_IMAGE}" ]]; then
     command=("${command[@]}" "--set app.name=${ACTION_SERVER_IMAGE:-rasa/rasa-x-demo}")
   fi
 
-  if  [[ $1 == "install" ]] || [[ -n "${ACTION_SERVER_TAG}" ]]
-  then
+  if [[ $1 == "install" ]] || [[ -n "${ACTION_SERVER_TAG}" ]]; then
     command=("${command[@]}" "--set app.tag=${ACTION_SERVER_TAG:-${RASA_X_DEMO_VERSION}}")
   fi
 
-  if  [[ $1 == "install" ]] || [[ -n "${DEBUG_MODE}" ]]
-  then
+  if [[ $1 == "install" ]] || [[ -n "${DEBUG_MODE}" ]]; then
     command=("${command[@]}" "--set global.debugMode=${DEBUG_MODE:-False}")
   fi
 
-  if [[ -n "${ADDITIONAL_CHANNEL_CREDENTIALS}" ]]
-  then
+  if [[ -n "${ADDITIONAL_CHANNEL_CREDENTIALS}" ]]; then
     # additional credentials may be passed in comma separated, e.g.
     # facebook.verify="dasda",facebook.test="dasd"
-    IFS=',' read -ra channels <<< "$ADDITIONAL_CHANNEL_CREDENTIALS"
-    for channel_setting in "${channels[@]}"
-    do
-     command=("${command[@]}" "--set rasa.additionalChannelCredentials.$channel_setting")
+    IFS=',' read -ra channels <<<"$ADDITIONAL_CHANNEL_CREDENTIALS"
+    for channel_setting in "${channels[@]}"; do
+      command=("${command[@]}" "--set rasa.additionalChannelCredentials.$channel_setting")
     done
   fi
 
@@ -322,30 +303,29 @@ execute_helm_command() {
     "--namespace ${DEPLOYMENT_NAMESPACE}" "${DEPLOYMENT_NAME}" "rasa-x/rasa-x"
   )
 
-  no_root_helm "${command[@]}" > ${REDIRECT}
+  no_root_helm "${command[@]}" >${REDIRECT}
 }
 
 shell_config_file() {
- if [[ "${SHELL}" =~ zsh ]]; then
-  SHELL_CONFIG_FILE="${PWD}/.zshrc"
- elif [[ "${SHELL}" =~ bash ]]; then
-  SHELL_CONFIG_FILE="${PWD}/.bashrc"
- fi
+  if [[ "${SHELL}" =~ zsh ]]; then
+    SHELL_CONFIG_FILE="${PWD}/.zshrc"
+  elif [[ "${SHELL}" =~ bash ]]; then
+    SHELL_CONFIG_FILE="${PWD}/.bashrc"
+  fi
 }
 
 add_kubeconfig_variable() {
   if [[ $(grep -c KUBECONFIG "${SHELL_CONFIG_FILE}") -eq 0 ]]; then
-    echo -e "\n# kubectl configuration file\nexport KUBECONFIG=${KUBECONFIG}" >> "${SHELL_CONFIG_FILE}"
+    echo -e "\n# kubectl configuration file\nexport KUBECONFIG=${KUBECONFIG}" >>"${SHELL_CONFIG_FILE}"
   else
-    echo -e "\nSkipped. The KUBECONFIG variable has been found in the ${SHELL_CONFIG_FILE} file.\n" > ${REDIRECT}
+    echo -e "\nSkipped. The KUBECONFIG variable has been found in the ${SHELL_CONFIG_FILE} file.\n" >${REDIRECT}
   fi
 }
 
 echo_rasa_is_deployed() {
   echo_success "\n\nWelcome to Rasa X 🌟\n"
 
-  if $IS_EMBEDDED_CLUSTER
-  then
+  if $IS_EMBEDDED_CLUSTER; then
     # check if STDIN is attached to a pipe
     if [ ! -p /dev/stdin ]; then
       shell_config_file
@@ -373,13 +353,13 @@ echo_rasa_is_deployed() {
 
 install_rasa_x_chart() {
   # Create namespace in case it does not exist
-  kubectl create ns "${DEPLOYMENT_NAMESPACE}" &> /dev/null || true
+  kubectl create ns "${DEPLOYMENT_NAMESPACE}" &>/dev/null || true
 
   execute_helm_command install
 
   echo_rasa_is_deployed
 
-    echo -e "Rasa X will be installed into the following Kubernetes namespace: \
+  echo -e "Rasa X will be installed into the following Kubernetes namespace: \
 $(echo_bold "${DEPLOYMENT_NAMESPACE}")\n"
 
   echo "Please save the following access credentials for later use:"
@@ -401,7 +381,7 @@ wait_for_rasa_x_deployment() {
     --namespace "${DEPLOYMENT_NAMESPACE}" \
     --for=condition=available \
     --timeout=10s \
-    -l "app.kubernetes.io/component=rasa-x" deployment &> ${REDIRECT}
+    -l "app.kubernetes.io/component=rasa-x" deployment &>${REDIRECT}
 }
 
 wait_for_deployment_to_be_healthy() {
@@ -413,7 +393,7 @@ wait_for_deployment_to_be_healthy() {
   # The Rasa X health endpoints returns status 200 if the rasa-production and rasa-worker services are ready
   # The endpoint is checked inside of the rasa x pod in order to avoid dependency on an ingress configuration
   kubectl --namespace "${DEPLOYMENT_NAMESPACE}" \
-    exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"' &> ${REDIRECT}
+    exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"' &>${REDIRECT}
 }
 
 wait_till_deployment_finished() {
@@ -426,14 +406,12 @@ wait_till_deployment_finished() {
   trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
 
   # Wait until the Rasa deployment is up and running
-  while ! wait_for_rasa_x_deployment
-  do
-    kubectl --namespace "${DEPLOYMENT_NAMESPACE}" get pod > ${REDIRECT}
+  while ! wait_for_rasa_x_deployment; do
+    kubectl --namespace "${DEPLOYMENT_NAMESPACE}" get pod >${REDIRECT}
   done
 
   # Wait until Rasa X is fully operational
-  while ! wait_for_deployment_to_be_healthy
-  do
+  while ! wait_for_deployment_to_be_healthy; do
     sleep 10
   done
 
@@ -448,8 +426,7 @@ provide_login_credentials() {
   # Explain how to access Rasa X
   echo -e "The deployment is ready 🌟. "
 
-  if $IS_EMBEDDED_CLUSTER
-  then
+  if $IS_EMBEDDED_CLUSTER; then
     # Determine the public IP address
     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
     LOGIN_URL="http://${PUBLIC_IP}/login?username=me&password=${INITIAL_USER_PASSWORD}"
@@ -471,8 +448,7 @@ upgrade_rasa_x() {
   echo "Upgrading Rasa X ..."
 
   # Make sure we can access the embedded cluster
-  if $IS_EMBEDDED_CLUSTER
-  then
+  if $IS_EMBEDDED_CLUSTER; then
     export_k3s_kubeconfig
   fi
 
@@ -485,12 +461,10 @@ uninstall() {
   K3S_UNINSTALL_SCRIPT="/usr/local/bin/k3s-uninstall.sh"
   echo "Uninstalling Rasa X... "
 
-  if is_kubectl_installed_and_configured && does_command_exist "helm"
-  then
+  if is_kubectl_installed_and_configured && does_command_exist "helm"; then
     IS_EMBEDDED_CLUSTER=false
 
-    if does_command_exist "k3s"
-    then
+    if does_command_exist "k3s"; then
       IS_EMBEDDED_CLUSTER=true
     fi
 
@@ -498,14 +472,12 @@ uninstall() {
       "--namespace ${DEPLOYMENT_NAMESPACE}" "${DEPLOYMENT_NAME}"
     )
 
-    no_root_helm "${command[@]}" > ${REDIRECT}
+    no_root_helm "${command[@]}" >${REDIRECT}
   fi
 
-  if [[ -f ${K3S_UNINSTALL_SCRIPT} ]]
-  then
-    ${K3S_UNINSTALL_SCRIPT} &> ${REDIRECT}
-  elif does_command_exist "k3s"
-  then
+  if [[ -f ${K3S_UNINSTALL_SCRIPT} ]]; then
+    ${K3S_UNINSTALL_SCRIPT} &>${REDIRECT}
+  elif does_command_exist "k3s"; then
     echo "K3s uninstall script not found."
     exit 1
   fi
@@ -527,48 +499,47 @@ help() {
 optspec=":hu-:"
 while getopts "$optspec" optchar; do
   case "${optchar}" in
-    -)
-      case "${OPTARG}" in
-        help)
-          help
-          exit 0
-          ;;
-        uninstall)
-          uninstall
-          exit 0
-          ;;
-        *)
-          echo "Unknown option --${OPTARG}" >&2
-          exit 1
-          ;;
-      esac;;
-        h)
-          help
-          exit 0
-          ;;
-        u)
-          uninstall
-          exit 0
-          ;;
-        *)
-          echo "Unknown option -${OPTARG}" >&2
-          exit 1
-          ;;
+  -)
+    case "${OPTARG}" in
+    help)
+      help
+      exit 0
+      ;;
+    uninstall)
+      uninstall
+      exit 0
+      ;;
+    *)
+      echo "Unknown option --${OPTARG}" >&2
+      exit 1
+      ;;
     esac
+    ;;
+  h)
+    help
+    exit 0
+    ;;
+  u)
+    uninstall
+    exit 0
+    ;;
+  *)
+    echo "Unknown option -${OPTARG}" >&2
+    exit 1
+    ;;
+  esac
 done
 
 check_if_can_be_installed
 install_os_specific_requirements
 
-if is_kubectl_installed_and_configured
-then
+if is_kubectl_installed_and_configured; then
   echo "Found existing cluster."
 else
   install_k3s
 fi
 
-if does_command_exist "k3s"
-then
+if does_command_exist "k3s"; then
   IS_EMBEDDED_CLUSTER=true
 else
   IS_EMBEDDED_CLUSTER=false
@@ -577,8 +548,7 @@ fi
 install_helm
 get_latest_chart_from_repository
 
-if is_rasa_x_deployed
-then
+if is_rasa_x_deployed; then
   upgrade_rasa_x
   wait_till_deployment_finished
   echo -e "Upgrading was successful 🌟. "
