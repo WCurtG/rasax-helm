@@ -33,11 +33,11 @@ jobs:
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-    - name: Destroy DIGITALOCEAN_DROPLET 
-      run: |
-        echo "- Destroying the droplet"
-        # delete the droplets
-        doctl compute droplet delete -f "${DROPLET}"
+    # - name: Destroy DIGITALOCEAN_DROPLET 
+    #   run: |
+    #     echo "- Destroying the droplet"
+    #     # delete the droplets
+    #     doctl compute droplet delete -f "${DROPLET}"
 
     - name: Get a DigitalOcean SSH key
       run: |
