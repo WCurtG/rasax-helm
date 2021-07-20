@@ -26,7 +26,7 @@ jobs:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
     - name: ssh in to DO droplet
-      run: doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }} --ssh-key-path ${{ secrets.SSH_PRIVATE_KEY }}
+      run: doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }} --ssh-key-path $GITHUB_WORKSPACE/.ssh/id_rsa --ssh-user ubuntu --ssh-port 22
 
     - name: Run test command 
       run: echo "this is a test"  
