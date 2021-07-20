@@ -26,7 +26,11 @@ jobs:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
     - name: Destroy DIGITALOCEAN_DROPLET 
-      run: $GITHUB_WORKSPACE/do_droplet_config/./droplet_destroy.sh
+      run: |
+        cd $GITHUB_WORKSPACE/do_droplet_config && 
+        ./droplet_destroy.sh
       
     - name: Create DIGITALOCEAN_DROPLET
-      run: $GITHUB_WORKSPACE/do_droplet_config/./droplet_create.sh
+      run: |
+        $GITHUB_WORKSPACE/do_droplet_config && 
+        ./droplet_create.sh
