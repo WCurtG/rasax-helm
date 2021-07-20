@@ -42,7 +42,9 @@ jobs:
     - name: Get a DigitalOcean SSH key
       run: |
             SSH_ID=$(doctl compute ssh-key list | grep -i "${SSH_KEY_NAME}" | cut -d' ' -f1)
+            echo "SSH_ID=$SSH_ID" >> $GITHUB_ENV
             SSH_KEY=$(doctl compute ssh-key get "${SSH_ID}" --format FingerPrint --no-header)
+            echo "SSH_KEY=$SSH_KEY" >> $GITHUB_ENV
 
     - name: Create DIGITALOCEAN_DROPLET
       run: |
@@ -57,7 +59,9 @@ jobs:
                 --wait
             # get the public ip of the node
             ID=$(doctl compute droplet list | grep "${DROPLET}" | cut -d' ' -f1)
+            echo "ID=$ID" >> $GITHUB_ENV
             PUBLIC_IP=$(doctl compute droplet get "${ID}" --format PublicIPv4 --no-header)
+            echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
 
     - name: Download the repo
       run: |
