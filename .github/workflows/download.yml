@@ -45,6 +45,6 @@ jobs:
         ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Download rasax-helm to exiting droplet      
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'cd rasax-helm && echo "Failed to download existing version exist, please rename or remove then run again" && exit || curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash'
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'cd rasax-helm && echo "Failed to download existing version exist, please rename or remove then run again" && ./failure || curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash'
 
 
