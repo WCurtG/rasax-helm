@@ -69,7 +69,7 @@ get_ssh_key () {
 
  # create the droplet
 droplet_create () {
-    doctl compute droplet create "${NAME}" \
+    doctl compute droplet create "${DROPLET}" \
         --region "${REGION}" \
         --image ubuntu-20-10-x64 \
         --size "${SIZE}" \
@@ -78,7 +78,7 @@ droplet_create () {
         --enable-monitoring \
         --wait
     # get the public ip of the node
-    ID=$(doctl compute droplet list | grep "${NAME}" | cut -d' ' -f1)
+    ID=$(doctl compute droplet list | grep "${DROPLET}" | cut -d' ' -f1)
     PUBLIC_IP=$(doctl compute droplet get "${ID}" --format PublicIPv4 --no-header)
     echo "- Waiting node to finish installation"
 }
