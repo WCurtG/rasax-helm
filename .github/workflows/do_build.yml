@@ -50,6 +50,9 @@ jobs:
       run: |
         ssh-keyscan -H $(doctl compute droplet get "$DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Deploy
+      env: 
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}        
       run: |
         doctl compute ssh "$DROPLET" \
         echo "This was created by GH" >> GH.txt
