@@ -54,9 +54,15 @@ seperator() {
 
 # This is the easist way to add the Repo to your VM
 
+app_installed() {
+    # Return failure if it doesn't exist or is no executable
+    which "$1" >/dev/null || return 1
 
+    return 0
+}
 
 download () {
+  app_installed rasax-helm && fatal "rasax-helm is already installed"
   sudo apt update -q && sudo apt upgrade -qy && sudo apt autoremove -qy &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
   sudo apt-get install unzip -y &&
