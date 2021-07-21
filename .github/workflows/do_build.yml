@@ -18,6 +18,7 @@ env:
   DIGITALOCEAN_DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
   DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  SSH_PATH: ${{ github.workspace }}/.ssh/id_rsa 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -32,6 +33,6 @@ jobs:
 
     - name: SSH to droplet
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="github.workspace/.ssh/id_rsa"
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="$SSH_PATH"
 
 
