@@ -54,6 +54,6 @@ jobs:
         SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}        
       run: |
-        doctl compute ssh "$DROPLET" --ssh-command 'echo "This was created by GH" >> $HOME/GH.txt'
+        doctl compute ssh "$DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash'
 
 
