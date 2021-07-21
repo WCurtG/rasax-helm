@@ -43,4 +43,4 @@ jobs:
         ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Download rasax-helm to exiting droplet      
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'rsync -va --delete-after rasax-helm rasax-helm-original || curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash && cd rasax-helm && ./auto_helm.sh'
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'rsync -va --delete-after rasax-helm rasax-helm-original || (curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download | sudo bash) && cd rasax-helm && ./auto_helm.sh'
