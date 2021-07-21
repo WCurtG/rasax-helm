@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: SSH into DigitalOcean Droplet
         run: |
-          ssh -i ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }} ubuntu@{{ secrets.DIGITALOCEAN_DROPLET }}.digitalocean.com
+          ssh -i "$DIGITALOCEAN_SSH_KEY_NAME" ubuntu@"$DIGITALOCEAN_DROPLET".digitalocean.com
           echo "Droplet is ready to use"
           cd $HOME
           touch GH_WAS_HERE.txt
