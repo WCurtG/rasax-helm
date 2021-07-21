@@ -51,6 +51,7 @@ jobs:
         ssh-keyscan -H $(doctl compute droplet get "$DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Deploy
       run: |
-        doctl compute ssh "$DROPLET" --ssh-command 'echo "This was created by GH" >> GH.txt'   
+        doctl compute ssh "$DROPLET" \
+        echo "This was created by GH" >> GH.txt
 
 
