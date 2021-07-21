@@ -147,7 +147,7 @@ install_docker() {
     app_installed docker && seperator echo_success "docker is already installed skipping.." ||
         {
             echo_bold "Installing docker ..."
-            sudo apt-get -qq install docker.io docker-compose &&
+            sudo apt-get -qq install docker.io docker-compose >/dev/null &&
                 cd /etc/docker &&
                 echo -e "{ \n  \t \"insecure-registries\" : [\"localhost:32000\"] \n}" >daemon.json &&
                 seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal
@@ -179,7 +179,7 @@ install_octant() {
             cd "$HOME" &&
                 mkdir -p octant &&
                 cd octant &&
-                wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >/dev/null &&
+                wget -quiet https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >/dev/null &&
                 sudo dpkg -i octant_0.21.0_Linux-64bit.deb >/dev/null &&
                 seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
         }
@@ -219,8 +219,8 @@ create_namespace() {
                 seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
                 seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal
                 ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
-                echo_success "Namespace $NAME_SPACE status: installing...."
-                while [ ${#result1} -ne 0 ]; 
+                echo_success "Namespace $NAME_SPACE is installing...."
+                while [ ${#ns_status} -ne 0 ]; 
                 do
                    	ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
 	                sleep 1 
@@ -294,7 +294,7 @@ deploy_helm() {
         seperator echo_error "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" fatal
         ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
         echo_success "Namespace $NAME_SPACE status: installing...."
-        while [ ${#result1} -ne 0 ]; 
+        while [ ${#ns_status} -ne 0 ]; 
         do
            	ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
 	        sleep 1 
@@ -302,7 +302,10 @@ deploy_helm() {
         echo_success "Namespace $NAME_SPACE status: Active" &&
         echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
         microk8s.kubectl --namespace "$NAME_SPACE" get services &&
-        # curl http://$EXTERNAL_IP:8000/api/version &&
+        line_break &&
+        microk8s.kubectl --namespace "$NAME_SPACE" get pods &&
+        api_status=
+        curl http://$EXTERNAL_IP:8000/api/version &&
         provide_login_credentials
 }
 
