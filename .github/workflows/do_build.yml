@@ -17,6 +17,7 @@ on:
 env:
   DIGITALOCEAN_DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
   DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -24,11 +25,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH into DigitalOcean Droplet
-        run: |
-          ssh -i "$DIGITALOCEAN_SSH_KEY_NAME" ubuntu@"$DIGITALOCEAN_DROPLET".digitalocean.com
-          echo "Droplet is ready to use"
-          cd $HOME
-          touch GH_WAS_HERE.txt
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: SSH to droplet
+      run: |
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="$SSH_PRIVATE_KEY"
 
 
