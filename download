@@ -56,7 +56,7 @@ seperator() {
 
 app_installed() {
     # Return failure if it doesn't exist or is no executable
-    which "$1" >/dev/null || return 1
+    which "$1" >/dev/null || fatal
 
     return 0
 }
