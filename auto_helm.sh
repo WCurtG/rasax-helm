@@ -228,7 +228,7 @@ install_octant() {
             cd "$HOME" &&
                 mkdir -p octant &&
                 cd octant &&
-                wget -quiet https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
+                wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
                 sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
                 seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
         }
@@ -380,13 +380,6 @@ add_alias() {
         [ "$(grep "^VM_IP=" ~/.bash*)" ] || echo "VM_IP=${EXTERNAL_IP}" >>"${SHELL_CONFIG_FILE}" &&
         [ "$(grep "^alias api_v=" ~/.bash*)" ] || echo "alias api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\"" >>"${SHELL_CONFIG_FILE}" &&
         seperator echo_success "Your ~/.bashrc file is up to date. aliases available: \n \n kubectl='microk8s.kubectl' \n \n helm='microk8s.helm3' \n \n k=\"kubectl --namespace ${NAME_SPACE}\" \n \n h=\"helm --namespace ${NAME_SPACE}\" \n \n api_v=\"curl http://${EXTERNAL_IP}:8000/api/version\" \n "
-}
-
-start_octant() {
-    line_break
-    read -e -p "Would you like to start octant? [Y/n] " YN
-    [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
-        OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser
 }
 
 # This is the start of running code
