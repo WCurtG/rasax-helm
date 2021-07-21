@@ -5,8 +5,8 @@ name: SSH to DO
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-#   push:
-#     branches: [ master ]
+  push:
+    branches: [ master ]
 #   pull_request:
 #     branches: [ master ]
 
@@ -37,6 +37,7 @@ jobs:
     - name: SSH key
       env: 
         SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
       shell: bash
       run: |
         mkdir ~/.ssh
@@ -44,9 +45,10 @@ jobs:
         chmod 400 ~/.ssh/id_rsa
     - name: Add droplet to the list of known hosts
       run: |
-        ssh-keyscan -H $(doctl compute droplet list -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
+        ssh-keyscan -H $(doctl compute droplet get "$DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Deploy
       run: |
-        doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }} --ssh-command     
+        doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }} --ssh-command \
+        'echo "This was created by GH" >> GH.txt'   
 
 
