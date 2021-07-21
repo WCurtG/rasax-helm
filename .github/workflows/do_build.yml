@@ -28,14 +28,25 @@ jobs:
     steps:
     - name: Echo SSH SSH_PATH
       run: echo $SSH_PATH
-      
+
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-    - name: SSH to droplet
+    - name: SSH key
+      env: 
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      shell: bash
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="$SSH_PATH"
+        mkdir ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 400 ~/.ssh/id_rsa
+    - name: Add droplet to the list of known hosts
+      run: |
+        ssh-keyscan -H $(doctl compute droplet list -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
+    - name: Deploy
+      run: |
+        doctl compute ssh ${{ secrets.DIGITALOCEAN_DROPLET }} --ssh-command     
 
 
