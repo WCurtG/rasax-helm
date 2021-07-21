@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Echo SSH SSH_PATH
+      run: echo $SSH_PATH
+      
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
       with:
