@@ -13,22 +13,22 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Setting the workflow environment variables
+env:
+  DIGITALOCEAN_DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
+  DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Staging server
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          # ARGS: "-rltgoDzvO"
-          # SOURCE: "dist/"
-          REMOTE_HOST: ${{ secrets.HOST }}
-          REMOTE_USER: root
-          # TARGET: "/root"
-      - name: Send echo test 
+      - name: SSH into DigitalOcean Droplet
         run: |
-            echo "Success"
+          ssh -i ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }} ubuntu@{{ secrets.DIGITALOCEAN_DROPLET }}.digitalocean.com
+          echo "Droplet is ready to use"
+          cd $HOME
+          touch GH_WAS_HERE.txt
+
 
