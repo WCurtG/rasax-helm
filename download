@@ -62,13 +62,14 @@ app_installed() {
 }
 
 download () {
-  app_installed rasax-helm && fatal "rasax-helm is already installed" ||
+  app_installed rasax-helm && {
   sudo apt update -q && sudo apt upgrade -qy && sudo apt autoremove -qy &&
   wget https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip >${REDIRECT} &&
   sudo apt-get install unzip -y &&
   unzip master.zip >${REDIRECT} && 
   mv -f rasax-helm-master rasax-helm && 
   clean_up
+  } || fatal "rasax-helm is already installed"
 }
 
 clean_up () {
