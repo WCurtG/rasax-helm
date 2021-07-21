@@ -32,6 +32,6 @@ jobs:
 
     - name: SSH to droplet
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="$SSH_PRIVATE_KEY"
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-key-path="github.workspace/.ssh/id_rsa"
 
 
