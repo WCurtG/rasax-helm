@@ -228,8 +228,8 @@ install_octant() {
             cd "$HOME" &&
                 mkdir -p octant &&
                 cd octant &&
-                wget -quiet https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb >/dev/null &&
-                sudo dpkg -i octant_0.21.0_Linux-64bit.deb >/dev/null &&
+                wget -quiet https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
+                sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
                 seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
         }
 }
@@ -237,7 +237,6 @@ install_octant() {
 install_requirements() {
     install_snapd &&
         install_docker &&
-        install_microk8s &&
         install_microk8s &&
         install_octant &&
         namespace_question
