@@ -34,7 +34,7 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
 Upgrade your realse by running in a new shell
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/upgrade | sudo bash
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/upgrade.sh | sudo bash
 ```
 
 ## Kubernetes Management
