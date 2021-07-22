@@ -69,9 +69,9 @@ $(tput cols) && columns=$(tput cols) || columns=100
 
 seperator() {
     echo -e "\n\n\n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
@@ -84,21 +84,21 @@ line_break() {
 
 # Loading animation while the new rasa x is being deployed
 
-wait_for_rasa_x_deployment() {
-  # Use `/dev/null` for everything since the expected timeout will be logged to `stderr`
-  microk8s.kubectl wait --namespace "${NAME_SPACE}" --for=condition=available --timeout=10s -l "app.kubernetes.io/component=rasa-x" deployment & > /dev/null
-}
+# wait_for_rasa_x_deployment() {
+#   # Use `/dev/null` for everything since the expected timeout will be logged to `stderr`
+#   microk8s.kubectl wait --namespace "${NAME_SPACE}" --for=condition=available --timeout=10s -l "app.kubernetes.io/component=rasa-x" deployment & > /dev/null
+# }
 
-wait_for_deployment_to_be_healthy() {
-  # Get the Rasa X pod name
-  POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
+# wait_for_deployment_to_be_healthy() {
+#   # Get the Rasa X pod name
+#   POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
 
-  # shellcheck disable=SC2016
-  # Check the Rasa X health endpoint to be sure that the deployment is ready and the Rasa X is fully operational
-  # The Rasa X health endpoints returns status 200 if the rasa-production and rasa-worker services are ready
-  # The endpoint is checked inside of the rasa x pod in order to avoid dependency on an ingress configuration
-  microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"' &> /dev/null
-}
+#   # shellcheck disable=SC2016
+#   # Check the Rasa X health endpoint to be sure that the deployment is ready and the Rasa X is fully operational
+#   # The Rasa X health endpoints returns status 200 if the rasa-production and rasa-worker services are ready
+#   # The endpoint is checked inside of the rasa x pod in order to avoid dependency on an ingress configuration
+#   microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"' &> /dev/null
+# }
 
 run_loading_animation() {
     i=1
@@ -353,7 +353,7 @@ deploy_helm() {
         wait_till_deployment_finished &&
         echo_success "Open in your browser here http://${EXTERNAL_IP}:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "${NAME_SPACE}" get services && curl http://${EXTERNAL_IP}/api/version" &&
         microk8s.kubectl --namespace "${NAME_SPACE}" get services &&
-        curl http://${EXTERNAL_IP}:8000/api/version &&
+        # curl http://${EXTERNAL_IP}:8000/api/version &&
         provide_login_credentials
 }
 
