@@ -89,7 +89,7 @@ wait_for_rasa_x_deployment() {
   microk8s.kubectl wait \
     --namespace "$NAME_SPACE" \
     --for=condition=available \
-    --timeout=10s \
+    --timeout=60s \
     -l "app.kubernetes.io/component=rasa-x" deployment & > /dev/null
 }
 
