@@ -42,14 +42,10 @@ fatal() {
   exit 1
 }
 
+$(tput cols) || columns=40
+
 get_colums () {
-  terminl=$TERM
-  if [$terminl == "" ] ; then
-  columns="40"
-  else
-  columns="$(tput cols)"
-  fi
-  echo $columns
+  $(tput cols) && columns=$(tput cols) || columns=40
 }
 
 
