@@ -1,0 +1,46 @@
+name: Intial Deployment of Raza X to DigitalOcean droplet 
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  # push:
+  #   branches: [ master ]
+#   pull_request:
+#     branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Setting the workflow environment variables
+env:
+  DIGITALOCEAN_DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
+  DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  SSH_PATH: ${{ github.workspace }}/.ssh/id_rsa 
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Upgrade_Raza_X:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Echo SSH SSH_PATH
+      run: echo $SSH_PATH
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: SSH key set up
+      shell: bash
+      run: |
+        mkdir ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 400 ~/.ssh/id_rsa
+    - name: Add droplet to the list of known hosts 
+      run: |
+        ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
+    - name: Upgrade Raza X with values.yml in the root of droplet      
+      run: |
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'cd rasax-helm && ./upgrade.sh'
