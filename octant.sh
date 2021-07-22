@@ -41,13 +41,12 @@ line_break() {
 
 
 start_octant() {
-  read -e -p "Would you like to start octant? [Y/n] " YN
-  [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
+  # read -e -p "Would you like to start octant? [Y/n] " YN
+  # [[ $YN == "y" || $YN == "Y" || $YN == "" ]] &&
     seperator echo_success "Octant is starting. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/" &&
     OCTANT_LISTENER_ADDR=0.0.0.0:8002 octant --disable-open-browser &&
     seperator echo_error "Octant failed to start." fatal ||
     seperator echo_bold "Octant will not be started." fatal
 }
 
-seperator echo_success "Octant is starting. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/" &&
 start_octant
