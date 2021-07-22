@@ -1,4 +1,4 @@
-name: Intial Deployment of Raza X to DigitalOcean droplet 
+name: Upgrade Existing Deployment of Raza X on DigitalOcean droplet 
 
 # Controls when the workflow will run
 on:
