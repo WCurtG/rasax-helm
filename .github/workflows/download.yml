@@ -22,7 +22,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build:
+  Download_Repo_to_Droplet:
     runs-on: ubuntu-latest
 
     steps:
