@@ -42,5 +42,5 @@ Upgrade your realse by running in a new shell
 Start Octant
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant | sudo bash
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant.sh | sudo bash
 ```
