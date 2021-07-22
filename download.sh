@@ -42,10 +42,8 @@ fatal() {
   exit 1
 }
 
-$(tput cols) || columns=40
-
 get_colums () {
-  $(tput cols) && columns=$(tput cols) || columns=100
+  $(tput cols) > /dev/null && columns=$(tput cols) || columns=100
 }
 
 
