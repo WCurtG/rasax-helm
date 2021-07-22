@@ -50,9 +50,9 @@ get_colums () {
 seperator() {
     get_colums 
     echo -e "\n\n\n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
