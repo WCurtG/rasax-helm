@@ -44,7 +44,7 @@ fatal() {
 
 get_colums () {
   terminl=$TERM
-  if [$terminl ==  ] ; then
+  if [$terminl == "" ] ; then
   columns="40"
   else
   columns="$(tput cols)"
