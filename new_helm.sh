@@ -323,9 +323,10 @@ wait_till_deployment_finished() {
 }
 
 provide_login_credentials() {
-    # Explain how to access Rasa X
-    echo_success "The deployment is ready 🤖. "
-
+    wait_till_deployment_finished &&
+    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
+    microk8s.kubectl --namespace "$NAME_SPACE" get services &&
+    
     # Determine the public IP address
     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
     LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
