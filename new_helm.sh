@@ -345,7 +345,7 @@ update_values() {
 deploy_helm() {
     cd "${HOME}" &&
         # put in to test the helm error fix https://github.com/helm/helm/issues/8776#issuecomment-742607909
-        ><> chmod go-r /var/snap/microk8s/2262/credentials/client.config &&
+        chmod go-r /var/snap/microk8s/2262/credentials/client.config &&
         microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >/dev/null &&
         microk8s.helm3 --namespace "${NAME_SPACE}" install --values values.yml my-release rasa-x/rasa-x &&
         seperator echo_success "microk8s.helm3 --namespace "${NAME_SPACE}" using values.yml has been installed" ||
