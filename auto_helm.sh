@@ -65,13 +65,9 @@ fatal() {
     exit 1
 }
 
-get_colums () {
-  $(tput cols) >/dev/null && columns=$(tput cols) || columns=100
-}
-
+$(tput cols) && columns=$(tput cols) || columns=100
 
 seperator() {
-    get_colums 
     echo -e "\n\n\n"
     yes = | head -n$(($columns * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
