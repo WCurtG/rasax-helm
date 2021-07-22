@@ -102,6 +102,10 @@ verify_downloader() {
     DOWNLOADER=$1
 }
 
+seperator echo_success ${COLUMNS}
+seperator echo_success ${OSTYPE}
+
+
 check_if_can_be_installed() {
     OS=$(uname | tr '[:upper:]' '[:lower:]')
     echo ${OS}
