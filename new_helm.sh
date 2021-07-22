@@ -344,7 +344,7 @@ update_values() {
 
 deploy_helm() {
     cd "${HOME}" &&
-        # put in to test the helm error fix https://github.com/helm/helm/issues/8776#issuecomment-742607909
+        # put in to fix the helm error https://github.com/helm/helm/issues/8776#issuecomment-742607909
         chmod go-r /var/snap/microk8s/2262/credentials/client.config &&
         microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >/dev/null &&
         microk8s.helm3 --namespace "${NAME_SPACE}" install --values values.yml my-release rasa-x/rasa-x &&
@@ -352,7 +352,7 @@ deploy_helm() {
         seperator echo_error "microk8s.helm3 --namespace "${NAME_SPACE}" install Failed" fatal
         wait_till_deployment_finished &&
         echo_success "Open in your browser here http://${EXTERNAL_IP}:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "${NAME_SPACE}" get services && curl http://${EXTERNAL_IP}/api/version" &&
-        microk8s.kubectl --namespace "${NAME_SPACE}" get services &&
+        microk8s.kubectl get pods --namespace "${NAME_SPACE}" &&
         # curl http://${EXTERNAL_IP}:8000/api/version &&
         provide_login_credentials
 }
