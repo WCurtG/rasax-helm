@@ -43,7 +43,7 @@ fatal() {
 }
 
 get_colums () {
-  $(tput cols) > /dev/null && columns=$(tput cols) || columns=100
+  $(tput cols) >/dev/null && columns=$(tput cols) || columns=100
 }
 
 

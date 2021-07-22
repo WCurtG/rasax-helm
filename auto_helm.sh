@@ -65,24 +65,24 @@ fatal() {
     exit 1
 }
 
-if $TERM == "" ; then
-colums=40
-else
-colums=$(tput cols)
-fi
+get_colums () {
+  $(tput cols) >/dev/null && columns=$(tput cols) || columns=100
+}
+
 
 seperator() {
+    get_colums 
     echo -e "\n\n\n"
-    yes = | head -n$(($($colums) * 1)) | tr -d '\n'
+    yes = | head -n$(($columns * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$(($($colums) * 1)) | tr -d '\n'
+    yes = | head -n$(($columns * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
 }
 
 line_break() {
-    yes = | head -n$(($(tput cols) * 1)) | tr -d '\n'
+    yes = | head -n$(($columns * 1)) | tr -d '\n'
     echo -e "\n\n\n"
 }
 
@@ -94,7 +94,7 @@ wait_for_rasa_x_deployment() {
     --namespace "$NAME_SPACE" \
     --for=condition=available \
     --timeout=10s \
-    -l "app.kubernetes.io/component=rasa-x" deployment &> /dev/null
+    -l "app.kubernetes.io/component=rasa-x" deployment & > /dev/null
 }
 
 wait_for_deployment_to_be_healthy() {
