@@ -45,7 +45,7 @@ fatal() {
 $(tput cols) || columns=40
 
 get_colums () {
-  $(tput cols) && columns=$(tput cols) || columns=40
+  $(tput cols) && columns=$(tput cols) || columns=100
 }
 
 
@@ -68,7 +68,7 @@ app_installed() {
     fatal "Too many existing versions found in current directory" ||
     find $PWD/$1 &&
     search_result="We renamed an existing version of rasax-helm to rasax-helm-original" &&
-    echo -e "\n\n\n replacing rasax-helm with rasax-helm-original in app_installed" &&
+    seperator echo_success "replacing rasax-helm with rasax-helm-original in app_installed" &&
     # change the name of the existing version to rasax-helm-original
     mv -f $PWD/rasax-helm rasax-helm-original ||
     search_result="No existing rasax-helm found, we have added $PWD/rasax-helm" && return 0
@@ -81,7 +81,7 @@ download () {
   wget --quiet https://github.com/WCurtG/rasax-helm/archive/refs/heads/master.zip &&
   sudo apt-get install unzip -qq &&
   unzip -o -q $PWD/master.zip && 
-  echo -e "\n\n\n replacing rasax-helm with rasax-helm-original in download" &&
+  seperator echo_success "replacing rasax-helm with rasax-helm-original in download" &&
   # rename the downloaded version to rasax-helm
   mv -f $PWD/rasax-helm-master rasax-helm && 
   clean_up
@@ -91,7 +91,7 @@ clean_up () {
   # Remove the downloaded zip file
   find $PWD -type f -iname "master.zip" -mmin -2 -delete &&
   echo -e "\n\n\n"
-  echo_success "Cleaning up your download...."
+  seperator echo_success "Cleaning up your download...."
   echo -e "\n\n\n"
   sleep 3
 }
