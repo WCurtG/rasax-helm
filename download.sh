@@ -60,6 +60,11 @@ seperator() {
 
 # This is the easist way to add the Repo to your VM
 
+update_vm() {
+  sudo apt update -y && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y &&
+  download
+}
+
 app_installed() {
     # Return failure if both rasax-helm and rasax-helm-original exist in the same directory
     find $PWD/$1 && find $PWD/rasax-helm-original && 
@@ -93,5 +98,5 @@ clean_up () {
   echo -e "\n\n\n"
   sleep 3
 }
-download &&
+update_vm &&
 seperator echo_success "master.zip has been cleaned from root and rasa-helm-master been added. You are currently in root/rasa-helm-master"
