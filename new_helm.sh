@@ -288,7 +288,6 @@ create_namespace() {
 }
 
 rebuild_namespace() {
-
     cd "${HOME}" && microk8s.kubectl delete namespace "${NAME_SPACE}" &&
         microk8s.kubectl create namespace "${NAME_SPACE}" &&
         seperator echo_success "microk8s.kubectl namespace "${NAME_SPACE}" has been created" ||
