@@ -49,4 +49,5 @@ start_octant() {
     seperator echo_bold "Octant will not be started." fatal
 }
 
+seperator echo_success "Octant is starting. You can access it in a browser at http://${EXTERNAL_IP}:8002/#/" &&
 start_octant
