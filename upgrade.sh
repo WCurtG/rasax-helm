@@ -65,20 +65,20 @@ fatal() {
     exit 1
 }
 
-$(tput cols) && columns=$(tput cols) || columns=100
+# $(tput cols) && columns=$(tput cols) || columns=100
 
 seperator() {
     echo -e "\n\n\n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
 }
 
 line_break() {
-    yes = | head -n$(($columns * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
 }
 
@@ -104,8 +104,8 @@ verify_downloader() {
 
 check_if_can_be_installed() {
     OS=$(uname | tr '[:upper:]' '[:lower:]')
-    echo $OS
-    [[ $OS == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
+    echo ${OS}
+    [[ ${OS} == "linux" ]] && echo_success "Linux OS found script starting.. " || fatal "Running this script is only supported on Linux systems."
 
     verify_downloader curl || verify_downloader wget || fatal 'Cannot find curl or wget for downloading files'
     install_requirements || fatal 'Cannot install required packages'
@@ -176,6 +176,7 @@ install_octant() {
         }
 }
 
+# Make sure all the required packages are installed
 install_requirements() {
     install_snapd &&
         install_docker &&
@@ -198,37 +199,6 @@ namespace_question() {
         namespace_exist "$NAME_SPACE"
 }
 
-# create_namespace() {
-#     namespace_exist "$NAME_SPACE" &&
-#         seperator echo_success "microk8s.kubectl namespace $NAME_SPACE already exist" &&
-#         rebuild_namespace ||
-#         {
-#             echo_success Creating namespace $NAME_SPACE....
-#             cd "$HOME" &&
-#                 microk8s.kubectl create namespace "$NAME_SPACE" &&
-#                 seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
-#                 seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created." fatal
-#                 ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
-#                 echo_success "Namespace $NAME_SPACE is installing...."
-#                 while [ ${#ns_status} -ne 0 ]; 
-#                 do
-#                    	ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
-# 	                sleep 1 
-#                 done
-#                 echo_success "Namespace $NAME_SPACE status: Active" &&
-#             password_question
-#         }
-# }
-
-# rebuild_namespace() {
-
-#     cd "$HOME" && microk8s.kubectl delete namespace "$NAME_SPACE" &&
-#         microk8s.kubectl create namespace "$NAME_SPACE" &&
-#         seperator echo_success "microk8s.kubectl namespace "$NAME_SPACE" has been created" ||
-#         seperator echo_error "microk8s.kubectl namespace "$NAME_SPACE" failed to be created."
-#     password_question
-# }
-
 upgrade_namespace() {
         cd "$HOME" &&
         microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x &&
@@ -236,64 +206,49 @@ upgrade_namespace() {
         seperator echo_error "namespace $NAME_SPACE has not been upgraded. Exiting.." fatal
 }
 
-# password_question() {
-#     INITIAL_USERNAME=${INITIAL_USERNAME:-me} &&
-#     INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} &&
-#     generate_not_yet_specified_passwords
-# }
+run_loading_animation() {
+    i=1
+    sp="/-\|"
+    while :; do
+        sleep 0.1
+        # Don't show spinner when we are debugging
+        if ! $INSTALLER_DEBUG_MODE; then
+            printf "\b%s" ${sp:i++%${#sp}:1}
+        fi
+    done
+}
 
-# # This will be run when the user is propmted to create a password or let the system create one.
-# generate_not_yet_specified_passwords() {
-#     PASSWORD_SALT=$(get_specified_password_or_generate "${PASSWORD_SALT}") &&
-#         RASA_X_TOKEN=$(get_specified_password_or_generate "${RASA_X_TOKEN}") &&
-#         INITIAL_USER_PASSWORD=$(get_specified_password_or_generate "${INITIAL_USER_PASSWORD}") &&
-#         RASA_TOKEN=$(get_specified_password_or_generate "${RASA_TOKEN}") &&
-#         RABBITMQ_PASSWORD=$(get_specified_password_or_generate "${RABBITMQ_PASSWORD}") &&
-#         POSTGRES_PASSWORD=$(get_specified_password_or_generate "${POSTGRES_PASSWORD}") &&
-#         REDIS_PASSWORD=$(get_specified_password_or_generate "${REDIS_PASSWORD}") &&
-#         update_values
-# }
+wait_till_deployment_finished() {
+  # Run the loading animation in the background while are waiting for the deployment
+  run_loading_animation &
+  LOADING_ANIMATION_PID=$!
+  # Kill loading animation when the install script is killed
+  # Also mute error output in case the process was already killed before
+  # shellcheck disable=SC2064
+  trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
+  # Wait for the deployment to be ready   
+  ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+  echo_success "Namespace "${NAME_SPACE}" is installing...."
+  while [ ${#ns_status} -ne 0 ]; 
+  do
+    ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+     sleep 1 
+  done
+  echo_success "Namespace "${NAME_SPACE}"status: Active" &&
+  microk8s.kubectl get pods --namespace "${NAME_SPACE}"
+  POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
+  microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"'
+  # Stop the loading animation since the deployment is finished
+  kill -9 ${LOADING_ANIMATION_PID}
 
-# # Generates a random password when feed nothing.
-# get_specified_password_or_generate() {
-#     if [[ -z $1 ]]; then
-#         # shellcheck disable=SC2005
-#         echo "$(tr </dev/urandom -dc 'A-Za-z0-9' | head -c20)"
-#     else
-#         echo "$1"
-#     fi
-# }
-
-# update_values() {
-#     cd $RASA_LOCATION &&
-#         # Update the values.yaml file
-#         sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
-#         mv tmp.yml values.yml &&
-#         mv -f values.yml "$HOME" &&
-#         seperator echo_success "\n We have updated your temp_values.yml file and renamed it, values.yml file with updated \n \n \t EXTERNAL_IP : ${EXTERNAL_IP} \n \n \t INITIAL_USERNAME : ${INITIAL_USERNAME} \n \n \t INITIAL_USER_PASSWORD : ${INITIAL_USER_PASSWORD} \n \n Review the "$HOME"/values.yml file to find and update other advanced deployment information \n" &&
-#         deploy_helm
-# }
-
-# deploy_helm() {
-#     cd "$HOME" &&
-#         microk8s.helm3 repo add rasa-x https://rasahq.github.io/rasa-x-helm >/dev/null &&
-#         microk8s.helm3 --namespace "$NAME_SPACE" install --values values.yml my-release rasa-x/rasa-x &&
-#         seperator echo_success "microk8s.helm3 --namespace "$NAME_SPACE" using values.yml has been installed" ||
-#         seperator echo_error "microk8s.helm3 --namespace "$NAME_SPACE" install Failed" fatal
-#         wait_till_deployment_finished &&
-#         echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
-#         microk8s.kubectl --namespace "$NAME_SPACE" get services &&
-#         curl http://$EXTERNAL_IP:8000/api/version &&
-#         provide_login_credentials
-# }
+  # Remove remnants of the spinner
+  printf "\b"
+}
 
 provide_login_credentials() {
     wait_till_deployment_finished &&
     echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
     microk8s.kubectl --namespace "$NAME_SPACE" get services &&
-    curl http://$EXTERNAL_IP:8000/api/version &&
-    # Explain how to access Rasa X
-    echo -e "The deployment is ready 🤖. "
 
     # Determine the public IP address
     PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
@@ -312,67 +267,6 @@ provide_login_credentials() {
     echo_success "You can now access Rasa X on this URL: ${LOGIN_URL}"
     line_break
     add_alias
-}
-
-# Loading animation while the new rasa x is being deployed
-
-wait_for_rasa_x_deployment() {
-  # Use `/dev/null` for everything since the expected timeout will be logged to `stderr`
-  microk8s.kubectl wait \
-    --namespace "$NAME_SPACE" \
-    --for=condition=available \
-    --timeout=60s \
-    -l "app.kubernetes.io/component=rasa-x" deployment & > /dev/null
-}
-
-wait_for_deployment_to_be_healthy() {
-  # Get the Rasa X pod name
-  POD=$(microk8s.kubectl --namespace "$NAME_SPACE" get pod -l app.kubernetes.io/component=rasa-x -o name)
-
-  # shellcheck disable=SC2016
-  # Check the Rasa X health endpoint to be sure that the deployment is ready and the Rasa X is fully operational
-  # The Rasa X health endpoints returns status 200 if the rasa-production and rasa-worker services are ready
-  # The endpoint is checked inside of the rasa x pod in order to avoid dependency on an ingress configuration
-  microk8s.kubectl --namespace "$NAME_SPACE" \
-    exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"' &> /dev/null
-}
-
-wait_till_deployment_finished() {
-  # Run the loading animation in the background while are waiting for the deployment
-  run_loading_animation &
-  LOADING_ANIMATION_PID=$!
-  # Kill loading animation when the install script is killed
-  # Also mute error output in case the process was already killed before
-  # shellcheck disable=SC2064
-  trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
-
-  # Wait until the Rasa deployment is up and running
-  while ! wait_for_rasa_x_deployment; do
-    microk8s.kubectl --namespace $NAME_SPACE get pod > /dev/null
-  done
-
-  # Wait until Rasa X is fully operational
-  while ! wait_for_deployment_to_be_healthy; do
-    sleep 10
-  done
-
-  # Stop the loading animation since the deployment is finished
-  kill -9 ${LOADING_ANIMATION_PID}
-
-  # Remove remnants of the spinner
-  printf "\b"
-}
-
-run_loading_animation() {
-    i=1
-    sp="/-\|"
-    while :; do
-        sleep 0.1
-        # Don't show spinner when we are debugging
-        if ! $INSTALLER_DEBUG_MODE; then
-            printf "\b%s" ${sp:i++%${#sp}:1}
-        fi
-    done
 }
 
 add_alias() {
