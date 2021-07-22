@@ -66,20 +66,20 @@ fatal() {
 }
 
 # Causes an error on Github Actions because tput is not available
-$(tput cols) && columns=$(tput cols) || columns=100
+# $(tput cols) && columns=$(tput cols) || columns=100
 
 seperator() {
     echo -e "\n\n\n"
-    yes = | head -n$((${columns} * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$((${columns} * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
 }
 
 line_break() {
-    yes = | head -n$((${columns} * 1)) | tr -d '\n'
+    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
 }
 
@@ -257,7 +257,7 @@ get_specified_password_or_generate() {
 }
 
 update_values() {
-    cd $RASA_LOCATION &&
+    cd ${RASA_LOCATION} &&
         # Update the values.yaml file
         sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
         mv tmp.yml values.yml &&
