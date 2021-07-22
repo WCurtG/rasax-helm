@@ -132,15 +132,15 @@ wait_till_deployment_finished() {
 #   done
 
   # Curt Test
-  ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespaces "${NAME_SPACE}")
+  ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
   echo_success "Namespace "${NAME_SPACE}"is installing...."
   while [ ${#ns_status} -ne 0 ]; 
   do
-    ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespaces "${NAME_SPACE}")
+    ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
      sleep 1 
   done
   echo_success "Namespace "${NAME_SPACE}"status: Active" &&
-  microk8s.kubectl get pods --namespaces "${NAME_SPACE}"
+  microk8s.kubectl get pods --namespace "${NAME_SPACE}"
   POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
   microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"'
   # Stop the loading animation since the deployment is finished
