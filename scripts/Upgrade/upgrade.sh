@@ -231,11 +231,11 @@ wait_till_deployment_finished() {
   # shellcheck disable=SC2064
   trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
   # Wait for the deployment to be ready   
-  ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+  my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
   echo_success "Namespace "${NAME_SPACE}" is installing...."
-  while [ ${#ns_status} -ne 0 ]; 
+  while [ ${#my_ns_status} -ne 0 ]; 
   do
-    ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+    my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
      sleep 1 
   done
   echo_success "Namespace "${NAME_SPACE}"status: Active" &&

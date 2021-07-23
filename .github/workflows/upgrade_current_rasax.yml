@@ -43,4 +43,4 @@ jobs:
         ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Upgrade Raza X with values.yml in the root of droplet      
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'cd rasax-helm && ./upgrade.sh'
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'rasax-helm/./upgrade.sh'
