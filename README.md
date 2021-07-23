@@ -24,7 +24,7 @@ This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deplo
 
 You can also use the Github Actions to deploy to Digital Ocean
 
-![Download the Repo](https://github.com/WCurtG/rasax-helm/actions/workflows/download.yml)
+![Download the Repo](https://github.com/WCurtG/rasax-helm/actions/workflows/download.yml/badge.svg)
 
 ![Download and Deploy to DO droplet](https://github.com/WCurtG/rasax-helm/actions/workflows/deploy_rasax_new.yml/badge.svg)
 
