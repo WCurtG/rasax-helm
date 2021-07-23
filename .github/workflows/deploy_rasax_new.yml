@@ -17,7 +17,7 @@ env:
   DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
   SSH_PATH: ${{ github.workspace }}/.ssh/id_rsa
-  BRANCH: ${{ github.branch }}
+  BRANCH: ${{ github.ref }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -44,4 +44,4 @@ jobs:
         ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
     - name: Download rasax-helm to exiting droplet      
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/"$BRANCH"/Install/download.sh | sudo bash && rasax-helm/./new_helm.sh'
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/$BRANCH/Install/download.sh | sudo bash && rasax-helm/./new_helm.sh'
