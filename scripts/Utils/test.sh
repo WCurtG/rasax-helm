@@ -50,9 +50,9 @@ fi
 
 seperator() {
     echo -e "\n\n\n"
-    yes = | head -n$(($($colums) * 1)) | tr -d '\n'
+    yes '=' | head -n$(($($colums) * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$(($($colums) * 1)) | tr -d '\n'
+    yes '=' | head -n$(($($colums) * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
@@ -61,3 +61,5 @@ seperator() {
 branch="refs/head/restructer"
 
 echo "${branch##*/}"
+
+seperator echo_success "testin"
