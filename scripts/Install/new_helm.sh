@@ -169,7 +169,7 @@ install_octant() {
         {
             cd "${HOME}" &&
                 mkdir -p octant &&
-                cd octant &&
+                cd ${HOME}/octant &&
                 wget https://github.com/vmware-tanzu/octant/releases/download/v0.21.0/octant_0.21.0_Linux-64bit.deb &&
                 sudo dpkg -i octant_0.21.0_Linux-64bit.deb &&
                 seperator echo_success "octant has been installed" || seperator echo_error "octant install failed" fatal
@@ -208,11 +208,11 @@ create_namespace() {
                 microk8s.kubectl create namespace "${NAME_SPACE}" &&
                 seperator echo_success "microk8s.kubectl namespace "${NAME_SPACE}" has been created" ||
                 seperator echo_error "microk8s.kubectl namespace "${NAME_SPACE}" failed to be created." fatal
-                ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
+                cns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
                 echo_success "Namespace "${NAME_SPACE}"is installing...."
-                while [ ${#ns_status} -ne 0 ]; 
+                while [ ${#cns_status} -ne 0 ]; 
                 do
-                   	ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
+                   	cns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --all-namespaces)
 	                sleep 1 
                 done
                 echo_success "Namespace "${NAME_SPACE}"status: Active" &&
@@ -257,7 +257,7 @@ get_specified_password_or_generate() {
 }
 
 update_values() {
-    cd ${RASA_LOCATION} &&
+    cd "${RASA_LOCATION}/Install" &&
         # Update the values.yaml file
         sed "s/PASSWORD_SALT/${PASSWORD_SALT}/ ; s/RASA_X_TOKEN/${RASA_X_TOKEN}/ ; s/INITIAL_USERNAME/${INITIAL_USERNAME}/ ;s/INITIAL_USER_PASSWORD/${INITIAL_USER_PASSWORD}/ ; s/RASA_TOKEN/${RASA_TOKEN}/ ; s/RABBITMQ_PASSWORD/${RABBITMQ_PASSWORD}/ ; s/POSTGRES_PASSWORD/${POSTGRES_PASSWORD}/ ; s/REDIS_PASSWORD/${REDIS_PASSWORD}/ ; s/EXTERNAL_IP/${EXTERNAL_IP}/ " temp_values.yml >tmp.yml &&
         mv tmp.yml values.yml &&
@@ -304,11 +304,11 @@ wait_till_deployment_finished() {
   # shellcheck disable=SC2064
   trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
   # Wait for the deployment to be ready   
-  ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+  my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
   echo_success "Namespace "${NAME_SPACE}" is installing...."
-  while [ ${#ns_status} -ne 0 ]; 
+  while [ ${#my_ns_status} -ne 0 ]; 
   do
-    ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+    my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
      sleep 1 
   done
   echo_success "Namespace "${NAME_SPACE}"status: Active" &&
