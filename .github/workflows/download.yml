@@ -47,7 +47,7 @@ jobs:
       run: |
         echo $GITHUB_REPOSITORY
         echo ${{ github.ref }}
-        echo ${{ github.branch }}
+        echo should say branch name ${GITHUB_BRANCH##*/}
         doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/$GITHUB_REPOSITORY/"$BRANCH"/Install/download.sh | sudo bash'
 
 
