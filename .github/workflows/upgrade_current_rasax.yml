@@ -1,4 +1,4 @@
-name: Upgrade Existing Deployment of Raza X on DigitalOcean droplet 
+name: Upgrade Existing Deployment of Rasa X on DigitalOcean droplet 
 
 # Controls when the workflow will run
 on:
@@ -20,7 +20,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Upgrade_Raza_X:
+  Upgrade_RasaX:
     runs-on: ubuntu-latest
 
     steps:
