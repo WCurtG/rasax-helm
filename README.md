@@ -10,7 +10,7 @@ The easy way to set up Rasa X on your Ubuntu 20.04 VM server with Kubernetes man
 Download the repo and unzip to your VM for inspection
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download.sh | sudo bash &&
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Install/download.sh | sudo bash &&
     cd rasax-helm
 ```
 
@@ -19,22 +19,23 @@ Download the repo and unzip to your VM for inspection
 This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deploys Rasa X. This is done with docker, microk8s, kubectl, helm and octant dashboard.
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/download.sh | sudo bash &&
-    cd rasax-helm && ./rxhelm
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Install/download.sh | sudo bash && rasax-helm/Install/./rxhelm.sh
 ```
 
-<!-- Simple install without addind the repo to your Ubuntu 20.04 VM. To upgrade or rebuild your namespace deployment rerun the script again and follow the prompts.
+You can also use the Github Actions to deploy to Digital Ocean
 
-```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/simple_rxhelm | sudo bash
-``` -->
+![Download the Repo](https://github.com/WCurtG/rasax-helm/actions/workflows/download.yml/badge.svg) 
+
+![Download and Deploy to DO droplet](https://github.com/WCurtG/rasax-helm/actions/workflows/deploy_rasax_new.yml/badge.svg)
+
+![Upgrade Your Rasa X Deployment](https://github.com/WCurtG/rasax-helm/actions/workflows/deploy_rasax_new.yml/badge.svg)
 
 ## Upgrading or Rebuilding your deployment
 
 Upgrade your realse by running in a new shell
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/upgrade.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Upgrade/upgrade.sh | sudo bash
 ```
 
 ## Kubernetes Management
@@ -42,5 +43,6 @@ Upgrade your realse by running in a new shell
 Start Octant
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/octant.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Install/octant.sh | sudo bash
 ```
+

@@ -14,9 +14,9 @@ on:
 # Setting the workflow environment variables
 env:
   DIGITALOCEAN_DROPLET: ${{ secrets.DIGITALOCEAN_DROPLET }}
-  DIGITALOCEAN_SSH_KEY_NAME: ${{ secrets.DIGITALOCEAN_SSH_KEY_NAME }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  SSH_PATH: ${{ github.workspace }}/.ssh/id_rsa 
+  SSH_PATH: ${{ github.workspace }}/.ssh/id_rsa
+  BRANCH: ${{ github.ref }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
