@@ -1,4 +1,4 @@
-name: Intial Deployment of Raza X to DigitalOcean droplet 
+name: Intial Deployment of Rasa X to DigitalOcean droplet 
 
 # Controls when the workflow will run
 on:
@@ -20,7 +20,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Auto_Deploy_Raza_X:
+  Auto_Deploy_Rasa_X:
     runs-on: ubuntu-latest
 
     steps:
