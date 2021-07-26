@@ -82,7 +82,6 @@ line_break() {
     echo -e "\n\n\n"
 }
 
-
 download() {
     # [ $# -eq 1 ] || fatal 'download needs exactly 1 argument'
     url=$1
@@ -104,7 +103,6 @@ verify_downloader() {
 
 seperator echo_success ${COLUMNS}
 seperator echo_success ${OSTYPE}
-
 
 check_if_can_be_installed() {
     OS=$(uname | tr '[:upper:]' '[:lower:]')
@@ -204,7 +202,7 @@ namespace_question() {
 }
 
 upgrade_namespace() {
-        cd "$HOME" &&
+    cd "$HOME" &&
         microk8s.helm3 --namespace $NAME_SPACE upgrade --values values.yml my-release rasa-x/rasa-x &&
         provide_login_credentials ||
         seperator echo_error "namespace $NAME_SPACE has not been upgraded. Exiting.." fatal
@@ -223,39 +221,38 @@ run_loading_animation() {
 }
 
 wait_till_deployment_finished() {
-  # Run the loading animation in the background while are waiting for the deployment
-  run_loading_animation &
-  LOADING_ANIMATION_PID=$!
-  # Kill loading animation when the install script is killed
-  # Also mute error output in case the process was already killed before
-  # shellcheck disable=SC2064
-  trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
-  # Wait for the deployment to be ready   
-  my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
-  echo_success "Namespace "${NAME_SPACE}" is installing...."
-  while [ ${#my_ns_status} -ne 0 ]; 
-  do
+    # Run the loading animation in the background while are waiting for the deployment
+    run_loading_animation &
+    LOADING_ANIMATION_PID=$!
+    # Kill loading animation when the install script is killed
+    # Also mute error output in case the process was already killed before
+    # shellcheck disable=SC2064
+    trap "kill -9 ${LOADING_ANIMATION_PID} &> /dev/null || true" $(seq 1 15)
+    # Wait for the deployment to be ready
     my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
-     sleep 1 
-  done
-  echo_success "Namespace "${NAME_SPACE}"status: Active" &&
-  microk8s.kubectl get pods --namespace "${NAME_SPACE}"
-  POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
-  microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"'
-  # Stop the loading animation since the deployment is finished
-  kill -9 ${LOADING_ANIMATION_PID}
+    echo_success "Namespace "${NAME_SPACE}" is installing...."
+    while [ ${#my_ns_status} -ne 0 ]; do
+        my_ns_status=$(microk8s.kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Running --namespace "${NAME_SPACE}")
+        sleep 1
+    done
+    echo_success "Namespace "${NAME_SPACE}"status: Active" &&
+        microk8s.kubectl get pods --namespace "${NAME_SPACE}"
+    POD=$(microk8s.kubectl --namespace "${NAME_SPACE}" get pod -l app.kubernetes.io/component=rasa-x -o name)
+    microk8s.kubectl --namespace "${NAME_SPACE}" exec "${POD}" -- /bin/bash -c 'curl -s localhost:$SELF_PORT/api/health | grep "\"status\":200"'
+    # Stop the loading animation since the deployment is finished
+    kill -9 ${LOADING_ANIMATION_PID}
 
-  # Remove remnants of the spinner
-  printf "\b"
+    # Remove remnants of the spinner
+    printf "\b"
 }
 
 provide_login_credentials() {
     wait_till_deployment_finished &&
-    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
-    microk8s.kubectl --namespace "$NAME_SPACE" get services &&
+        echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
+        microk8s.kubectl --namespace "$NAME_SPACE" get services &&
 
-    # Determine the public IP address
-    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+        # Determine the public IP address
+        PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
     LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
 
     # Check if the URL is available over the public IP address
