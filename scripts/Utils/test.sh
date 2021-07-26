@@ -42,24 +42,17 @@ fatal() {
   exit 1
 }
 
-if $TERM == "" ; then
-colums=40
-else
-colums=$(tput cols)
-fi
 
 seperator() {
-    echo -e "\n\n\n"
-    yes '=' | head -n$(($($colums) * 1)) | tr -d '\n'
-    printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes '=' | head -n$(($($colums) * 1)) | tr -d '\n'
-    echo -e "\n\n\n"
-    # use fatal to stop the script
-    $3
+  echo -e "\n\n\n"
+  yes '=' | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+  printf "\n \n \t \t \t $($1 "$2") \n \n"
+  yes '=' | head -n$(($COLUMNS * 1)) | tr -d '\n'
+  echo -e "\n\n\n"
+  # use fatal to stop the script
+  $3
 }
 
-branch="refs/head/restructer"
-
-echo "${branch##*/}"
+echo $COLUMNS
 
 seperator echo_success "testin"
