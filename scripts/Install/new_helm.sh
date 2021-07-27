@@ -280,6 +280,8 @@ deploy_helm() {
         echo_success "Open in your browser here http://${EXTERNAL_IP}:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "${NAME_SPACE}" get services && curl http://${EXTERNAL_IP}/api/version" &&
         microk8s.kubectl get pods --namespace "${NAME_SPACE}" &&
         # curl http://${EXTERNAL_IP}:8000/api/version &&
+        microk8s.helm3repo add rasa https://helm.rasa.com &&
+        microk8s.helm3 repo update &&
         provide_login_credentials
 }
 
