@@ -68,18 +68,22 @@ fatal() {
 # Causes an error on Github Actions because tput is not available
 # $(tput cols) && columns=$(tput cols) || columns=100
 
+$(tput cols) >/dev/null && columns=$(tput cols) || columns=100
+
+
 seperator() {
+    get_colums 
     echo -e "\n\n\n"
-    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
     # use fatal to stop the script
     $3
 }
 
 line_break() {
-    yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+    yes = | head -n$((${columns} * 1)) | tr -d '\n'
     echo -e "\n\n\n"
 }
 
@@ -280,7 +284,7 @@ deploy_helm() {
         echo_success "Open in your browser here http://${EXTERNAL_IP}:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n microk8s.kubectl --namespace "${NAME_SPACE}" get services && curl http://${EXTERNAL_IP}/api/version" &&
         microk8s.kubectl get pods --namespace "${NAME_SPACE}" &&
         # curl http://${EXTERNAL_IP}:8000/api/version &&
-        microk8s.helm3repo add rasa https://helm.rasa.com &&
+        microk8s.helm3 repo add rasa https://helm.rasa.com &&
         microk8s.helm3 repo update &&
         provide_login_credentials
 }
