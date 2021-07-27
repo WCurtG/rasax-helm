@@ -18,9 +18,37 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  params:
+    name: params
+    runs-on: ubuntu-latest
+    # Map step outputs to job outputs, for use by downstream jobs
+    outputs:
+      git_branch: ${{ steps.git.outputs.git_branch }}
+      git_repo: ${{ steps.git.outputs.git_repo }}
+
+    steps:
+      - name: git
+        id: git
+        run: |
+          echo $GITHUB_REF
+          git_branch=$(echo ${GITHUB_REF##*/})
+          echo "::set-output name=git_branch::$git_branch"
+          git_repo=$(echo ${GITHUB_REPOSITORY})
+          echo "::set-output name=git_repo::$git_repo"
+
+  params_summary:
+    name: params_summary
+    runs-on: ubuntu-latest
+    needs: [params]
+    steps:
+    - name: params_summary
+      run: |
+        echo git_branch: ${{ needs.params.outputs.git_branch }}
+        echo git_repo: ${{ needs.params.outputs.git_repo }}
+
   Auto_Deploy_Rasa_X:
     runs-on: ubuntu-latest
-
+    needs: [params]
     steps:
 
     - name: Install doctl
@@ -37,7 +65,7 @@ jobs:
     - name: Add droplet to the list of known hosts 
       run: |
         ssh-keyscan -H $(doctl compute droplet get "$DIGITALOCEAN_DROPLET" -o json |jq -r '.[]| "\(.networks.v4[1].ip_address)"') >> ~/.ssh/known_hosts
-    - name: Download rasax-helm to exiting droplet      
+    - name: Download rasax-helm to exiting droplet     
       run: |
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/scripts/Install/download.sh | sudo bash &&
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/${{ needs.params.outputs.git_repo }}/${{ needs.params.outputs.git_branch }}/scripts/Install/download.sh | sudo bash &&
         rasax-helm/scripts/Install/./new_helm.sh'
