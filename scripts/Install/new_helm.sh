@@ -71,7 +71,7 @@ fatal() {
 $(tput cols) >/dev/null && columns=$(tput cols) || columns=100
 
 
-seperator() { 
+seperator() {
     echo -e "\n\n\n"
     yes = | head -n$((${columns} * 1)) | tr -d '\n'
     printf "\n \n \t \t \t $($1 "$2") \n \n"
