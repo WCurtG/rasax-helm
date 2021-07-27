@@ -67,5 +67,5 @@ jobs:
       run: |
         REPO=${GITHUB_REPOSITORY}
         echo $REPO
-        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/$REPO/${{ needs.params.outputs.git_branch }}/scripts/Install/download.sh | sudo bash &&
+        doctl compute ssh "$DIGITALOCEAN_DROPLET" --ssh-command 'curl -s https://raw.githubusercontent.com/$(${REPO})/${{ needs.params.outputs.git_branch }}/scripts/Install/download.sh | sudo bash &&
         rasax-helm/scripts/Install/./new_helm.sh'
