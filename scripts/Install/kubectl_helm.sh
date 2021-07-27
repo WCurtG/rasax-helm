@@ -263,7 +263,7 @@ provide_login_credentials() {
     kubectl --namespace "$NAME_SPACE" get services &&
     
     # Determine the public IP address
-    PUBLIC_IP=$(curl -s http://whatismyip.akamai.com/)
+    # EXTERNAL_IP=$(curl -s http://whatismyip.akamai.com/)
     LOGIN_URL="http://${EXTERNAL_IP}:8000/login?username=${INITIAL_USERNAME}&password=${INITIAL_USER_PASSWORD}"
 
     # Check if the URL is available over the public IP address
