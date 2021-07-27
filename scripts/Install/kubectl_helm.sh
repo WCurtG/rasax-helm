@@ -103,6 +103,8 @@ install_rasa_helm() {
 }
 
 install_dependencies() {
+    sudo apt update -y &&
+    sudo apt full-upgrade -y &&
     # Check if the dependencies are already installed then install needed packages
     app_installed "kubectl" || install_kubernetes
     app_installed "helm" || install_helm
