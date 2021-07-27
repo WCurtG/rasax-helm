@@ -33,6 +33,7 @@ jobs:
           echo $GITHUB_REF
           git_branch=$(echo ${GITHUB_REF##*/})
           echo "::set-output name=git_branch::$git_branch"
+          echo ${GITHUB_REPOSITORY}
 
   params_summary:
     name: params_summary
