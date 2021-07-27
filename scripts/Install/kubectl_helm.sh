@@ -60,15 +60,6 @@ line_break() {
     echo -e "\n\n\n"
 }
 
-update_vm() {
-    sudo apt update -y &&
-    sudo apt full-upgrade -y &&
-    sudo apt autoremove -y &&
-    sudo apt clean -y &&
-    sudo apt autoclean -y &&
-    check_if_can_be_installed
-}
-
 check_if_can_be_installed() {
     OS=$(uname | tr '[:upper:]' '[:lower:]')
     echo ${OS}
@@ -282,4 +273,4 @@ provide_login_credentials() {
 
 
 # Start the installation
-update_vm
+check_if_can_be_installed
