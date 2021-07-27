@@ -214,7 +214,7 @@ deploy_rasax() {
         wait_till_deployment_finished &&
         echo_success "Open in your browser here http://${EXTERNAL_IP}:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n kubectl --namespace "${NAME_SPACE}" get services && curl http://${EXTERNAL_IP}/api/version" &&
         kubectl get pods --namespace "${NAME_SPACE}" &&
-        # curl http://${EXTERNAL_IP}:8000/api/version &&
+        curl http://${EXTERNAL_IP}:8000/api/version
         provide_login_credentials
 }
 
@@ -259,7 +259,7 @@ wait_till_deployment_finished() {
 
 provide_login_credentials() {
     wait_till_deployment_finished &&
-    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP/api/version" &&
+    echo_success "Open in your browser here http://$EXTERNAL_IP:8000/api/version to check the api status and version \n \n Or run this command in your cli \n \n kubectl --namespace "$NAME_SPACE" get services && curl http://$EXTERNAL_IP:8000/api/version" &&
     kubectl --namespace "$NAME_SPACE" get services &&
     
     # Determine the public IP address
