@@ -1,4 +1,4 @@
-name: Intial Deployment of Rasa X to DigitalOcean droplet 
+name: Deploy with kubectl and helm to DigitalOcean
 
 # Controls when the workflow will run
 on:
