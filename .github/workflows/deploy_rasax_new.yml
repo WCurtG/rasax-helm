@@ -25,7 +25,6 @@ jobs:
     # Map step outputs to job outputs, for use by downstream jobs
     outputs:
       git_branch: ${{ steps.git.outputs.git_branch }}
-      git_repo: ${{ steps.git.outputs.git_repo }}
 
     steps:
       - name: git
@@ -34,9 +33,6 @@ jobs:
           echo $GITHUB_REF
           git_branch=$(echo ${GITHUB_REF##*/})
           echo "::set-output name=git_branch::$git_branch"
-          git_repo=$(echo ${GITHUB_REPOSITORY})
-          echo "::set-output name=git_repo::$git_repo"
-
 
   params_summary:
     name: params_summary
