@@ -95,7 +95,9 @@ app_installed() {
 install_kubernetes() {
     # Install kubectl
     snap install kubectl --classic &&
-    kubectl version --client
+    kubectl version --client &&
+    sudo apt-get install -y kubelet kubeadm kubectl &&
+    sudo apt-mark hold kubelet kubeadm kubectl
 }
 
 install_helm() {
