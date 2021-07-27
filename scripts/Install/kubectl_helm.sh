@@ -83,13 +83,28 @@ app_installed() {
     return 0
 }
 
+install_docker() {
+    app_installed docker && seperator echo_success "docker is already installed skipping.." ||
+        {
+            echo_bold "Installing docker ..."
+            sudo apt-get -qq install docker.io docker-compose >/dev/null &&
+                cd /etc/docker &&
+                echo -e "{ \n  \t \"insecure-registries\" : [\"localhost:32000\"] \n}" >daemon.json &&
+                seperator echo_success "docker has been installed" || seperator echo_error "docker install failed" fatal
+        }
+}
+
 install_kubernetes() {
     # Install kubectl
     snap install kubectl --classic &&
     kubectl version --client &&
+    sudo apt-get install -y apt-transport-https ca-certificates curl &&
+    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg &&
+    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list &&
+    sudo apt-get update &&
     sudo apt-get install -y kubelet kubeadm kubectl &&
     sudo apt-mark hold kubelet kubeadm kubectl
-}
+}    
 
 install_helm() {
     # Install helm
@@ -106,8 +121,9 @@ install_dependencies() {
     sudo apt update -y &&
     sudo apt full-upgrade -y &&
     # Check if the dependencies are already installed then install needed packages
-    app_installed "kubectl" || install_kubernetes
-    app_installed "helm" || install_helm
+    install_docker &&
+    install_kubernetes &&
+    install_helm &&
     install_rasa_helm &&
     namespace_question
 }
@@ -121,7 +137,7 @@ namespace_exist() {
 
 namespace_question() {
     seperator echo_success "** Current pods in all namespaces **" &&
-        kubectl get pods --all-namespaces &&
+        # kubectl get pods --all-namespaces &&
         NAME_SPACE=${NAME_SPACE:-my-namespace} &&
         create_namespace
 }
