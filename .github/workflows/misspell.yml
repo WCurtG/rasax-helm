@@ -1,6 +1,5 @@
 name: misspell
 
-
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
@@ -14,14 +13,13 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: sobolevn/misspell-fixer-action@master
-    - uses: peter-evans/create-pull-request@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: 'Fixes by misspell-fixer'
-        title: 'Typos fix by misspell-fixer'
+      - uses: actions/checkout@v2
+      - uses: sobolevn/misspell-fixer-action@master
+      - uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Fixes by misspell-fixer"
+          title: "Typos fix by misspell-fixer"
