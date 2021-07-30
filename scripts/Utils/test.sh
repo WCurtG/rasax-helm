@@ -53,6 +53,14 @@ seperator() {
   $3
 }
 
-echo $COLUMNS
+# echo $COLUMNS
 
-seperator echo_success "testin"
+# seperator echo_success "testin"
+
+FB_CALL=2
+call_fb() {
+  ((${FB_CALL}>5)) && echo "Get FB info update global vars" || echo "Don't get FB info"
+}
+
+echo ${FB_CALL}
+call_fb
