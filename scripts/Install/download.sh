@@ -42,17 +42,17 @@ fatal() {
   exit 1
 }
 
-$(tput cols) >/dev/null && columns=$(tput cols) || columns=100
-
+# Causes an error on Github Actions because tput is not available
+# $(tput cols) && columns=$(tput cols) || columns=100
 
 seperator() {
-    echo -e "\n\n\n"
-    yes = | head -n$((${columns} * 1)) | tr -d '\n'
-    printf "\n \n \t \t \t $($1 "$2") \n \n"
-    yes = | head -n$((${columns} * 1)) | tr -d '\n'
-    echo -e "\n\n\n"
-    # use fatal to stop the script
-    $3
+  echo -e "\n\n\n"
+  yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+  printf "\n \n \t \t \t $($1 "$2") \n \n"
+  yes = | head -n$((${COLUMNS} * 1)) | tr -d '\n'
+  echo -e "\n\n\n"
+  # use fatal to stop the script
+  $3
 }
 
 # This is the easist way to add the Repo to your VM
