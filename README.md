@@ -10,7 +10,7 @@ The easy way to set up Rasa X on your Ubuntu 20.04 VM server with Kubernetes man
 Download the repo and unzip to your VM for inspection
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Install/download.sh | sudo bash &&
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/scripts/Install/download.sh | sudo bash &&
     cd rasax-helm
 ```
 
@@ -19,7 +19,7 @@ Download the repo and unzip to your VM for inspection
 This simple scrpit automatically adds the repo to your Ubuntu 20.04 VM and deploys Rasa X. This is done with docker, microk8s, kubectl, helm and octant dashboard.
 
 ```bash
-    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/Install/download.sh | sudo bash && rasax-helm/Install/./rxhelm.sh
+    curl -s https://raw.githubusercontent.com/WCurtG/rasax-helm/master/scripts/Install/download.sh | sudo bash && rasax-helm/Install/./rxhelm.sh
 ```
 
 You can also use the Github Actions to deploy to Digital Ocean
